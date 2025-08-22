@@ -14,6 +14,15 @@ SATbot is an empathetic dialogue agent for guiding users through Self-Attachment
 
 ## Development Commands
 
+### Quick Start Scripts
+```bash
+# Start both backend and frontend (check scripts first)
+bash start_all.sh
+
+# Start backend only
+python start_backend.py
+```
+
 ### Backend Setup & Execution
 ```bash
 # Navigate to model directory
@@ -66,7 +75,14 @@ sqlite3 app.db "SELECT * FROM model_session;"
 - **Backend Entry**: `model/flask_backend_with_aws.py:11` - Flask app creation
 - **Main Application**: `model/__init__.py:27` - Flask app factory function
 - **Database Models**: `model/models.py:12` - SQLAlchemy ORM models
-- **Decision Logic**: `model/rule_based_model.py:15` - Rule-based therapeutic model
+- **Decision Logic**: `model/rule_based_model.py:15` - Rule-based therapeutic model with 26+ exercises
+- **Memory Integration**: `model/memory_integration.py` - Memory management system
+- **LLM Integration**: `model/llm_integration.py` - Large language model integration
+- **RAG System**: `model/rag_system.py` - Psychology document retrieval and processing
+- **TTS Service**: `model/tts_service.py` - Text-to-speech with emotional tone
+- **Companion Enhancer**: `model/companion_enhancer.py` - AI emotional intelligence
+- **Inspirational Cards**: `model/inspirational_cards.py` - Healing message card system
+- **Classifiers**: `model/classifiers.py` - Text classification utilities
 - **Frontend Config**: `view/src/config.js:24` - Chatbot configuration
 - **Frontend App**: `view/src/App.js:8` - Main React component
 - **Message Parser**: `view/src/MessageParser.js` - Handles user messages
@@ -86,6 +102,13 @@ FLASK_DEBUG=1
 Key endpoints (see `model/__init__.py`):
 - `POST /api/login` - User authentication and session creation
 - `POST /api/update_session` - Process user choices and get next therapeutic step
+- `POST /api/upload_document` - Upload psychology documents for RAG system
+- `POST /api/generate_speech` - Generate speech from therapeutic text
+- `GET /api/user_insights` - Get emotional insights and patterns
+- `GET /api/daily_checkin` - Get personalized daily check-in messages
+- `GET /api/draw_card` - Draw inspirational healing card
+- `GET /api/daily_card` - Get user's daily card
+- `GET /api/card_history` - Get card draw history
 
 ## Database Schema
 
@@ -125,25 +148,32 @@ Custom React components in `view/src/widgets/options/GeneralOptions/`:
 
 ### Backend Testing
 ```bash
-# Run test scripts
-python test_run.py
-python test_add_data.py
-python test_add_data_flask.py
+# Navigate to model directory
+cd model
+
+# Run integration tests
+python test_run.py              # Basic app startup test
+python test_add_data.py         # Database population test
+python test_add_data_flask.py   # Flask-specific data test
+python test_integration_simple.py  # Simple integration test
+python test_final_integration.py   # Comprehensive integration test
+python test_memory_integration.py  # Memory system test
+python test_satbot_memory.py      # SATbot memory functionality test
+
+# Test database connection
+python -c "from model.models import db; print('DB connected')"
 ```
 
 ### Frontend Testing
 ```bash
+# Navigate to view directory
+cd view
+
 # Run React tests
 npm test
 
 # Build for production
 npm run build
-```
-
-### Database Testing
-```bash
-# Test database connection
-python -c "from model.models import db; print('DB connected')"
 ```
 
 ## Code Style & Standards

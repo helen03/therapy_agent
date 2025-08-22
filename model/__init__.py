@@ -200,6 +200,222 @@ def create_app():
             "user_options": output["choices"],
         }
 
+    # Add new API endpoints for enhanced features
+    @app.route('/api/upload_document', methods=['POST'])
+    def upload_document():
+        """Upload psychology document for RAG system"""
+        try:
+            from model.rag_system import rag_system
+            
+            if 'file' not in request.files:
+                return {"success": False, "error": "No file provided"}, 400
+            
+            file = request.files['file']
+            user_id = request.form.get('user_id')
+            title = request.form.get('title', file.filename)
+            
+            if file.filename == '':
+                return {"success": False, "error": "No file selected"}, 400
+            
+            # Save temporary file
+            import tempfile
+            temp_path = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1])
+            file.save(temp_path.name)
+            
+            # Process document
+            doc_id = rag_system.upload_document(temp_path.name, user_id, title)
+            
+            # Clean up
+            os.unlink(temp_path.name)
+            
+            if doc_id:
+                return {"success": True, "doc_id": doc_id, "message": "Document uploaded successfully"}
+            else:
+                return {"success": False, "error": "Failed to process document"}, 500
+                
+        except Exception as e:
+            logger.error(f"Document upload failed: {e}")
+            return {"success": False, "error": str(e)}, 500
+
+    @app.route('/api/generate_speech', methods=['POST'])
+    def generate_speech():
+        """Generate speech from text"""
+        try:
+            from model.tts_service import tts_service
+            
+            data = request.get_json()
+            text = data.get('text')
+            user_emotion = data.get('user_emotion')
+            
+            if not text:
+                return {"success": False, "error": "No text provided"}, 400
+            
+            audio_file = tts_service.generate_therapeutic_voice_response(text, user_emotion)
+            
+            if audio_file:
+                return {"success": True, "audio_file": audio_file}
+            else:
+                return {"success": False, "error": "TTS generation failed"}, 500
+                
+        except Exception as e:
+            logger.error(f"Speech generation failed: {e}")
+            return {"success": False, "error": str(e)}, 500
+
+    @app.route('/api/user_insights', methods=['GET'])
+    def get_user_insights():
+        """Get emotional insights for user"""
+        try:
+            from model.companion_enhancer import companion_enhancer
+            
+            user_id = request.args.get('user_id')
+            if not user_id:
+                return {"success": False, "error": "User ID required"}, 400
+            
+            insights = companion_enhancer.get_emotional_insights(user_id)
+            return {"success": True, "insights": insights}
+            
+        except Exception as e:
+            logger.error(f"Insights retrieval failed: {e}")
+            return {"success": False, "error": str(e)}, 500
+
+    @app.route('/api/daily_checkin', methods=['GET'])
+    def daily_checkin():
+        """Get daily check-in message"""
+        try:
+            from model.companion_enhancer import companion_enhancer
+            
+            user_id = request.args.get('user_id')
+            if not user_id:
+                return {"success": False, "error": "User ID required"}, 400
+            
+            message = companion_enhancer.generate_daily_checkin(user_id)
+            companion_enhancer.record_checkin(user_id)
+            
+            return {"success": True, "message": message}
+            
+        except Exception as e:
+            logger.error(f"Daily check-in failed: {e}")
+            return {"success": False, "error": str(e)}, 500
+
+    @app.route('/api/draw_card', methods=['GET'])
+    def draw_inspirational_card():
+        """Draw an inspirational healing card"""
+        try:
+            from model.inspirational_cards import card_system
+            
+            user_id = request.args.get('user_id')
+            category = request.args.get('category')
+            emotion = request.args.get('emotion')
+            
+            if emotion:
+                # Draw card personalized to current emotion
+                card = card_system.draw_personalized_card(user_id, emotion)
+            elif category:
+                # Draw card from specific category
+                card = card_system.draw_card(user_id, category)
+            else:
+                # Draw random card
+                card = card_system.draw_card(user_id)
+            
+            return {
+                "success": True,
+                "card": card,
+                "message": "Card drawn successfully"
+            }
+            
+        except Exception as e:
+            logger.error(f"Card draw failed: {e}")
+            return {"success": False, "error": str(e)}, 500
+
+    @app.route('/api/daily_card', methods=['GET'])
+    def get_daily_card():
+        """Get user's daily card"""
+        try:
+            from model.inspirational_cards import card_system
+            
+            user_id = request.args.get('user_id')
+            if not user_id:
+                return {"success": False, "error": "User ID required"}, 400
+            
+            card = card_system.get_daily_card(user_id)
+            
+            return {
+                "success": True,
+                "card": card,
+                "message": "Daily card retrieved successfully"
+            }
+            
+        except Exception as e:
+            logger.error(f"Daily card retrieval failed: {e}")
+            return {"success": False, "error": str(e)}, 500
+
+    @app.route('/api/card_history', methods=['GET'])
+    def get_card_history():
+        """Get user's card draw history"""
+        try:
+            from model.inspirational_cards import card_system
+            
+            user_id = request.args.get('user_id')
+            if not user_id:
+                return {"success": False, "error": "User ID required"}, 400
+            
+            history = card_system.get_user_draw_history(user_id)
+            
+            return {
+                "success": True,
+                "history": history,
+                "message": "Card history retrieved successfully"
+            }
+            
+        except Exception as e:
+            logger.error(f"Card history retrieval failed: {e}")
+            return {"success": False, "error": str(e)}, 500
+
+    @app.route('/api/mcp_tools', methods=['GET'])
+    def get_mcp_tools():
+        """Get available MCP tools"""
+        try:
+            from model.mcp_integration import mcp_client
+            
+            tools = mcp_client.get_available_tools()
+            return {
+                "success": True,
+                "tools": tools,
+                "message": "MCP tools retrieved successfully"
+            }
+            
+        except Exception as e:
+            logger.error(f"MCP tools retrieval failed: {e}")
+            return {"success": False, "error": str(e)}, 500
+
+    @app.route('/api/execute_tool', methods=['POST'])
+    def execute_tool():
+        """Execute an MCP tool"""
+        try:
+            from model.mcp_integration import mcp_client
+            
+            data = request.get_json()
+            tool_name = data.get('tool_name')
+            parameters = data.get('parameters', {})
+            
+            if not tool_name:
+                return {"success": False, "error": "Tool name required"}, 400
+            
+            result = mcp_client.process_tool_call({
+                "name": tool_name,
+                "parameters": parameters
+            })
+            
+            return {
+                "success": True,
+                "result": result,
+                "message": "Tool executed successfully"
+            }
+            
+        except Exception as e:
+            logger.error(f"Tool execution failed: {e}")
+            return {"success": False, "error": str(e)}, 500
+
     return app
 
 
