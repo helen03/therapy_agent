@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from backend.services.memory_integration import memory_manager
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, ".env"))
+load_dotenv(os.path.join(basedir, ".env"), override=True)
 
 
 # For dev logging - comment out for Gunicorn
@@ -26,6 +26,9 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 # ~ Databases ~ #
 db = SQLAlchemy()  # <-Initialize database object
@@ -59,83 +62,105 @@ def create_app():
     # def home():
     #     return "ok"
 
+    @app.route("/api/register", methods=["POST"])
+    def register():
+        """User registration endpoint with password hashing"""
+        try:
+            user_info = json.loads(request.data)["user_info"]
+            username = user_info["username"]
+            password = user_info["password"]
+            email = user_info.get("email", "")
+            
+            # Validate input
+            if not username or not password:
+                return {"success": False, "error": "Username and password are required"}, 400
+            
+            if len(password) < 6:
+                return {"success": False, "error": "Password must be at least 6 characters"}, 400
+            
+            # Check if username already exists
+            existing_user = User.query.filter_by(username=username).first()
+            if existing_user:
+                return {"success": False, "error": "Username already exists"}, 400
+            
+            # Check if email already exists (if provided)
+            if email:
+                existing_email = User.query.filter_by(email=email).first()
+                if existing_email:
+                    return {"success": False, "error": "Email already exists"}, 400
+            
+            # Create new user with hashed password
+            new_user = User(username=username, email=email)
+            new_user.set_password(password)
+            
+            db.session.add(new_user)
+            db.session.commit()
+            
+            # Generate JWT token for immediate login
+            token = new_user.generate_auth_token()
+            
+            return {
+                "success": True,
+                "message": "User registered successfully",
+                "user_id": new_user.id,
+                "token": token
+            }
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Registration failed: {e}")
+            return {"success": False, "error": "Registration failed"}, 500
+
     @app.route("/api/login", methods=["POST"])
     def login():
-        user_info = json.loads(request.data)["user_info"]
-        username = user_info["username"]
-        password = user_info["password"]
-        usernames = ["user" + str(i) for i in range(1, 31)]
-        passwords = [
-            "ph6n76gec9",
-            "l98zjxj6vc",
-            "mq577o05wz",
-            "tcty170i9o",
-            "1kgh4895fx",
-            "ys175n9iv0",
-            "0fvcfgxplj",
-            "vu34rphc82",
-            "hyhnyg9xob",
-            "oqqct6wllc",
-            "oswly1eaxq",
-            "qe7inpmska",
-            "7ilhsc46ox",
-            "wo81yy0eci",
-            "2kufnda8bs",
-            "nzlljrerzt",
-            "ft0jinctnm",
-            "r3swsmr2rn",
-            "4cbp35phhh",
-            "falyezzw4r",
-            "r5v0mrvpuv",
-            "auee014rmj",
-            "wpprodq8vb",
-            "6nddssd3gg",
-            "z2394iw3mq",
-            "a3gkc6czb5",
-            "ddxzlpkzhv",
-            "2owdt20zas",
-            "29uhzahhol",
-            "mfhs4cyc4x",
-        ]
-        for i in range(len(usernames)):
-            try:
-                # Creates new accounts
-                new_user = User(username=usernames[i], password=passwords[i])
-                db.session.add(new_user)
-                db.session.commit()
-
-            except:  # noqa
-                db.session.rollback()
-
+        """User login with JWT authentication"""
         try:
-            guest_user = User(username="guest", password="guest")
-            db.session.add(guest_user)
-            db.session.commit()
-        except:  # noqa
-            db.session.rollback()
-
-        try:
-            user = User.query.filter_by(username=username, password=password).first()
-            if user:
+            user_info = json.loads(request.data)["user_info"]
+            username = user_info["username"]
+            password = user_info["password"]
+            
+            # Find user by username
+            user = User.query.filter_by(username=username).first()
+            
+            if user and user.check_password(password):
                 # Create a new session for the user
                 user_session = UserModelSession(user_id=user.id)
                 db.session.add(user_session)
                 db.session.commit()
                 
-                # Get initial response from decision maker
-                from backend.models.rule_based_model import decision_maker
-                initial_output = decision_maker.determine_next_choice(
-                    user.id, "any", None, db.session, user_session, app
-                )
+                # Generate JWT token
+                token = user.generate_auth_token()
                 
-                return {
-                    "success": True, 
-                    "validID": True,
-                    "userID": user.id,
-                    "sessionID": user_session.id,
-                    "model_prompt": initial_output["model_prompt"],
-                    "choices": initial_output["choices"]
-                }
+                try:
+                    # Try to get initial response from decision maker
+                    from backend.models.rule_based_model import decision_maker
+                    initial_output = decision_maker.determine_next_choice(
+                        user.id, "any", None, db.session, user_session, app
+                    )
+                    
+                    return {
+                        "success": True, 
+                        "validID": True,
+                        "userID": user.id,
+                        "sessionID": user_session.id,
+                        "token": token,
+                        "model_prompt": initial_output["model_prompt"],
+                        "choices": initial_output["choices"]
+                    }
+                except Exception as e:
+                    # Fallback if decision maker fails (e.g., LLM API issues)
+                    logger.warning(f"Decision maker failed: {e}")
+                    
+                    # Provide a basic response that doesn't rely on LLM
+                    return {
+                        "success": True, 
+                        "validID": True,
+                        "userID": user.id,
+                        "sessionID": user_session.id,
+                        "token": token,
+                        "model_prompt": "Hi, I'm MindGuide, welcome to today's session. How are you feeling today?",
+                        "choices": ["我很好，谢谢", "我有点难过", "我感到焦虑", "我想聊聊心事"]
+                    }
             else:
                 return {"success": False, "validID": False, "error": "Invalid username or password"}, 401
         except Exception as e:
@@ -288,9 +313,33 @@ def create_app():
             app.logger.error(f"Session update failed: {e}")
             return {"success": False, "error": str(e)}, 500
 
-    # Mobile and mini-program chat endpoint
+    # JWT token verification middleware
+    def token_required(f):
+        """Decorator to verify JWT tokens"""
+        from functools import wraps
+        
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            token = request.headers.get('Authorization')
+            
+            if not token:
+                return {"success": False, "error": "Token is missing"}, 401
+            
+            if token.startswith('Bearer '):
+                token = token[7:]
+            
+            user = User.verify_auth_token(token)
+            if not user:
+                return {"success": False, "error": "Token is invalid or expired"}, 401
+            
+            return f(user, *args, **kwargs)
+        
+        return decorated
+
+    # Mobile and mini-program chat endpoint with token authentication
     @app.route('/api/chat', methods=['POST'])
-    def chat_endpoint():
+    @token_required
+    def chat_endpoint(user):
         """Direct chat endpoint for mobile and mini-program clients"""
         try:
             from backend.services.llm_therapy_service import therapy_service
@@ -298,14 +347,13 @@ def create_app():
             data = request.get_json()
             message = data.get('message', '')
             session_id = data.get('session_id', '')
-            user_id = data.get('user_id', 'mobile_user')
             
             if not message:
                 return {"success": False, "error": "Message is required"}, 400
             
             # Process message using LLM therapy service
             response_data = therapy_service.process_message(
-                user_id, session_id, message, "text"
+                user.id, session_id, message, "text"
             )
             
             return {
@@ -315,13 +363,56 @@ def create_app():
                 "emotion": response_data.get("emotion", "neutral"),
                 "requires_followup": response_data.get("requires_followup", False),
                 "session_id": session_id,
-                "user_id": user_id
+                "user_id": user.id
             }
             
         except Exception as e:
             app.logger.error(f"Chat endpoint error: {e}")
             return {"success": False, "error": "服务器内部错误"}, 500
+
+    # Protected user profile endpoint example
+    @app.route('/api/user/profile', methods=['GET'])
+    @token_required
+    def user_profile(user):
+        """Get user profile information"""
+        try:
+            return {
+                "success": True,
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "date_created": user.date_created.isoformat() if user.date_created else None,
+                    "last_accessed": user.last_accessed.isoformat() if user.last_accessed else None
+                }
+            }
+        except Exception as e:
+            app.logger.error(f"User profile error: {e}")
+            return {"success": False, "error": "Failed to get user profile"}, 500
     
+    # JWT token verification middleware
+    def token_required(f):
+        """Decorator to verify JWT tokens"""
+        from functools import wraps
+        
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            token = request.headers.get('Authorization')
+            
+            if not token:
+                return {"success": False, "error": "Token is missing"}, 401
+            
+            if token.startswith('Bearer '):
+                token = token[7:]
+            
+            user = User.verify_auth_token(token)
+            if not user:
+                return {"success": False, "error": "Token is invalid or expired"}, 401
+            
+            return f(user, *args, **kwargs)
+        
+        return decorated
+
     # Mobile login endpoint
     @app.route('/api/mobile_login', methods=['POST'])
     def mobile_login():
@@ -335,7 +426,9 @@ def create_app():
             # Create or get user
             user = User.query.filter_by(username=username).first()
             if not user:
-                user = User(username=username, password=f'mobile_{datetime.datetime.now().timestamp()}')
+                # Create user with hashed password for mobile
+                user = User(username=username)
+                user.set_password(f'mobile_{datetime.datetime.now().timestamp()}')
                 db.session.add(user)
                 db.session.commit()
             
@@ -344,12 +437,15 @@ def create_app():
             db.session.add(user_session)
             db.session.commit()
             
+            # Generate JWT token
+            token = user.generate_auth_token()
+            
             # Initialize session with LLM
             session_data = therapy_service.initialize_session(user.id, user_session.id)
             
             return {
                 "success": True,
-                "token": f"mobile_token_{user.id}_{user_session.id}",
+                "token": token,
                 "user_id": user.id,
                 "session_id": user_session.id,
                 "initial_response": session_data["response"],

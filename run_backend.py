@@ -8,6 +8,6 @@ from backend import create_app
 if __name__ == "__main__":
     app = create_app()
     print("Starting Flask development server...")
-    print("Server will be available at: http://localhost:5000")
+    print("Server will be available at: http://localhost:5002")
     print("Press Ctrl+C to stop the server")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='127.0.0.1', port=5002)

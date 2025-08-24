@@ -7,8 +7,8 @@ import json
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 
-from models.llm_integration import get_llm
-from database.models import User, UserModelSession, Choice
+from backend.models.llm_integration import get_llm
+from backend.database.models import User, UserModelSession, Choice
 
 logger = logging.getLogger(__name__)
 

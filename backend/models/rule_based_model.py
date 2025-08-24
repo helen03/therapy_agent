@@ -1186,3 +1186,6 @@ class ModelDecisionMaker:
             next_choices = list(self.QUESTIONS[next_choice]["choices"].keys())
         self.user_choices[user_id]["choices_made"]["current_choice"] = next_choice
         return {"model_prompt": next_prompt, "choices": next_choices}
+
+# Global decision_maker instance
+decision_maker = ModelDecisionMaker()

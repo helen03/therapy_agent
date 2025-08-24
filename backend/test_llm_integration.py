@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append('.')
 
-from models.llm_integration import LLMIntegration
+from backend.models.llm_integration import LLMIntegration
 
 # 测试LLM集成
 def test_llm_integration():

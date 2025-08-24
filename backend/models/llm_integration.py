@@ -34,20 +34,29 @@ class LLMIntegration:
     def _call_api(self, endpoint: str, payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """通用API调用方法"""
         try:
+            # 检查API密钥是否有效
+            if not self.api_key or self.api_key.startswith("sk-") and len(self.api_key) < 20:
+                logger.warning("Invalid or missing API key, using fallback mode")
+                return None
+                
             headers = {
                 "Content-Type": "application/json",
             }
             
             if self.api_type == "openai":
-                headers["Authorization"] = f"Bearer {self.api_key}"
                 # DeepSeek API需要特殊处理
                 if "deepseek" in self.api_base:
+                    # DeepSeek使用不同的身份验证格式
+                    headers["Authorization"] = f"Bearer {self.api_key}"
                     # DeepSeek使用不同的模型名称
                     if "model" in payload:
                         if payload["model"] == "gpt-3.5-turbo":
                             payload["model"] = "deepseek-chat"
                         elif payload["model"] == "text-embedding-ada-002":
                             payload["model"] = "deepseek-embed"
+                else:
+                    # 标准OpenAI API
+                    headers["Authorization"] = f"Bearer {self.api_key}"
             elif self.api_type == "azure":
                 headers["api-key"] = self.api_key
             
@@ -63,13 +72,17 @@ class LLMIntegration:
                 url,
                 headers=headers,
                 json=payload,
-                timeout=10  # 增加到10秒
+                timeout=5  # 减少到5秒
             )
             
             if response.status_code == 200:
                 return response.json()
             else:
                 logger.error(f"API call failed: {response.status_code} - {response.text}")
+                # 如果是认证错误，立即返回None使用回退
+                if response.status_code in [401, 403]:
+                    logger.warning("Authentication failed, using fallback mode")
+                    return None
                 return None
                 
         except Exception as e:
@@ -288,6 +301,65 @@ def get_llm_integration():
         api_base=api_base
     )
 
+class MockLLM:
+    """模拟LLM类，用于API不可用时的回退"""
+    
+    def __init__(self):
+        self.api_type = "mock"
+        self.api_base = "mock://localhost"
+    
+    def analyze_emotion(self, text: str) -> str:
+        """模拟情感分析"""
+        text = text.strip().lower()
+        if not text:
+            return "neutral"
+        
+        emotion_keywords = {
+            "happy": ["开心", "高兴", "快乐", "幸福", "愉快"],
+            "sad": ["伤心", "难过", "悲伤", "沮丧", "失望"],
+            "angry": ["生气", "愤怒", "恼火", "烦躁", "不满"],
+            "anxious": ["焦虑", "紧张", "担心", "不安", "压力"]
+        }
+        
+        for emotion, keywords in emotion_keywords.items():
+            if any(keyword in text for keyword in keywords):
+                return emotion
+        
+        return "neutral"
+    
+    def generate_response(self, prompt: str, max_length: int = 300, temperature: float = 0.7) -> str:
+        """模拟响应生成"""
+        fallback_responses = [
+            "我在这里为您提供支持。请告诉我更多关于您的感受。",
+            "感谢您的消息。我理解这可能不容易，我会尽力帮助您。",
+            "我在这里倾听您。请随时分享您的想法和感受。"
+        ]
+        
+        import random
+        return random.choice(fallback_responses)
+    
+    def analyze_intention(self, text: str) -> str:
+        """模拟意图分析"""
+        text = text.strip().lower()
+        if not text:
+            return "not_s"
+        
+        suicidal_keywords = [
+            "自杀", "不想活了", "结束生命", "离开这个世界", 
+            "活着没意思", "撑不下去了", "想死"
+        ]
+        
+        for keyword in suicidal_keywords:
+            if keyword in text:
+                return "s"
+        
+        return "not_s"
+    
+    def get_semantic_similarity(self, text1: str, text2: str) -> float:
+        """模拟语义相似度"""
+        import difflib
+        return difflib.SequenceMatcher(None, text1, text2).ratio()
+
 # 全局LLM实例，懒加载
 _llm_instance = None
 
@@ -295,6 +367,17 @@ def get_llm():
     """获取全局LLM实例"""
     global _llm_instance
     if _llm_instance is None:
-        _llm_instance = get_llm_integration()
+        print("Initializing LLM instance...")
+        try:
+            # 配置LLM参数
+            # 这里应该有从环境变量或配置文件读取API密钥和其他参数的代码
+            # 由于没有具体的LLM提供商信息，我们先使用一个通用的实现
+            _llm_instance = get_llm_integration()
+            print("LLM instance initialized successfully!")
+        except Exception as e:
+            print(f"Failed to initialize LLM instance: {e}")
+            # 在实际应用中，这里可能会设置一个回退机制或使用模拟的LLM响应
+            # 为了演示，我们创建一个简单的模拟LLM实例
+            _llm_instance = MockLLM()
     return _llm_instance
 
