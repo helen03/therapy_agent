@@ -1,0 +1,53 @@
+<!-- miniprogram/pages/index/index.wxml -->
+<view class="container">
+  <view class="header">
+    <image class="logo" src="/images/logo.png" />
+    <text class="title">治疗助手</text>
+    <text class="subtitle">您的个性化心理健康伴侣</text>
+  </view>
+
+  <view class="content">
+    <view wx:if="{{!hasLogin}}" class="login-section">
+      <text class="welcome-text">欢迎使用治疗助手</text>
+      <text class="description">我们为您提供专业的心理支持和治疗指导</text>
+      
+      <button 
+        class="login-button" 
+        open-type="getUserInfo" 
+        bindgetuserinfo="onGetUserInfo"
+      >
+        微信一键登录
+      </button>
+    </view>
+
+    <view wx:else class="user-section">
+      <image class="avatar" src="{{userInfo.avatarUrl}}" />
+      <text class="username">您好，{{userInfo.nickName}}</text>
+      <text class="welcome-back">欢迎回来！</text>
+      
+      <button class="start-button" bindtap="navigateToChat">
+        开始对话
+      </button>
+    </view>
+
+    <view class="features">
+      <view class="feature-item">
+        <image class="feature-icon" src="/images/chat-icon.png" />
+        <text class="feature-title">智能对话</text>
+        <text class="feature-desc">与AI治疗助手进行深度交流</text>
+      </view>
+      
+      <view class="feature-item">
+        <image class="feature-icon" src="/images/insights-icon.png" />
+        <text class="feature-title">情绪洞察</text>
+        <text class="feature-desc">分析您的情绪模式和成长轨迹</text>
+      </view>
+      
+      <view class="feature-item">
+        <image class="feature-icon" src="/images/cards-icon.png" />
+        <text class="feature-title">治愈卡片</text>
+        <text class="feature-desc">每日获取个性化的治愈消息</text>
+      </view>
+    </view>
+  </view>
+</view>

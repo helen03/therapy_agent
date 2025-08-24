@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # 后端 API 服务
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=sqlite:////app/app.db
+      - CORS_ORIGINS=https://your-domain.com,https://mini-program.com
+    volumes:
+      - ../model:/app/model
+      - app_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Android 构建服务（可选）
+  android-builder:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.android
+    volumes:
+      - ../android:/app/android
+      - android_builds:/app/builds
+    environment:
+      - ANDROID_HOME=/opt/android-sdk
+    restart: on-failure
+
+  # Nginx 反向代理（生产环境）
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ssl_certs:/etc/ssl/certs
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  app_data:
+  android_builds:
+  ssl_certs:

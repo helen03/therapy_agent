@@ -1,36 +1,40 @@
-**Instructions to run the backend**
+# Therapy Agent Model Components
 
-You will need to install Python 3 first (3.6 or higher should work fine).
+This directory contains the core model components for the therapy agent application. The models are organized in a modular structure to separate concerns and improve maintainability.
 
-You may want to install virtualenv to store these libraries in one environment. More instructions at: https://python.land/virtual-environments/virtualenv
+## Directory Structure
 
+- `core_models/`: Contains the main model implementations
+  - `rule_based_model.py`: Core decision-making engine
+  - `llm_integration.py`: Large language model integration
+  - `rag_system.py`: Retrieval-Augmented Generation system
+  - `classifiers.py`: Text classification tools
+  - `companion_enhancer.py`: Emotional intelligence enhancement
+
+## Installation
+
+To use these models, you need to have the dependencies installed. You can install them from the `requirements.txt` file in the `backend` directory:
+
+```bash
+pip install -r ../backend/requirements.txt
 ```
-# ~ From outside the repo folder ~ #
-virtualenv ./SATbot1.2
 
-# ~ Now cd to the repo folder and activate virtual env ~ #
-source bin/activate
+## Usage
 
-# ~ cd to the 'model' folder and execute the following commands ~ #
-python3 -m pip install -r requirements.txt
-set FLASK_APP=flask_backend_with_aws
+These models are primarily designed to be used within the context of the therapy agent backend. To import and use the models:
 
-# ~ Open rule_based_model.py and change the path of self.data (line 18) to your local path to ep12.csv ~ #
+```python
+from model.core_models import ModelDecisionMaker, LLMIntegration
 
-# ~ Initialize database changes ~ #
-flask db init
+# Initialize the decision maker
+model = ModelDecisionMaker()
 
-# ~ Migrate database changes ~ #
-flask db migrate -m "testDB table"
-
-# ~ Upgrade database changes ~ #
-flask db upgrade
-
-# ~ Open .env and add the line DATABASE_URL="sqlite:////[your local path]/app.db". Save and close ~ #
-
-# ~ Optional: set debug mode to true ~ #
-export FLASK_DEBUG=1
-
-# ~ Launch flask ~ #
-flask run --eager-loading
+# Initialize the LLM integration
+llm = LLMIntegration(model_type="huggingface")
 ```
+
+## Note
+
+This directory has been restructured to focus solely on the core model components. The database setup, API endpoints, and other backend services are now located in the `backend` directory.
+
+For detailed information about the project structure and how to run the application, please refer to the main `README.md` file in the project root.

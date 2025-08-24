@@ -1,0 +1,41 @@
+<!-- miniprogram/pages/chat/chat.wxml -->
+<view class="chat-container">
+  <scroll-view 
+    scroll-y 
+    scroll-top="{{scrollTop}}" 
+    class="messages-container"
+    enhanced
+    show-scrollbar="false"
+  >
+    <view class="messages">
+      <view 
+        wx:for="{{messages}}" 
+        wx:key="id" 
+        class="message {{item.isUser ? 'user-message' : 'bot-message'}}"
+      >
+        <view class="message-content">
+          <text>{{item.text}}</text>
+        </view>
+        <view class="message-time">{{item.time}}</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="input-container">
+    <input 
+      value="{{inputValue}}" 
+      bindinput="onInput" 
+      placeholder="输入您的消息..." 
+      class="input"
+      confirm-type="send"
+      bindconfirm="sendMessage"
+    />
+    <button 
+      bindtap="sendMessage" 
+      class="send-button" 
+      disabled="{{!inputValue.trim() || isLoading}}"
+    >
+      {{isLoading ? '发送中...' : '发送'}}
+    </button>
+  </view>
+</view>
