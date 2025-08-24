@@ -40,6 +40,7 @@ class ChatViewModel : ViewModel() {
         val json = JSONObject()
         json.put("message", message)
         json.put("session_id", "android_session")
+        json.put("user_id", "android_user")
 
         val requestBody = RequestBody.create(
             MediaType.parse("application/json"), 
@@ -55,7 +56,12 @@ class ChatViewModel : ViewModel() {
         val responseBody = response.body()?.string()
         
         return if (response.isSuccessful && responseBody != null) {
-            JSONObject(responseBody).getString("response")
+            val responseJson = JSONObject(responseBody)
+            if (responseJson.getBoolean("success")) {
+                responseJson.getString("response")
+            } else {
+                "抱歉，请求处理失败：${responseJson.optString("error", "未知错误")}"
+            }
         } else {
             "抱歉，服务暂时不可用。"
         }

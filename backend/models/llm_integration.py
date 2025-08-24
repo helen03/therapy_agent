@@ -1,252 +1,189 @@
 import os
 import logging
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-import torch
-import openai
+import requests
+import json
 import time
+from typing import Dict, Any, Optional
 
-# 设置日志\logging.basicConfig(level=logging.INFO)
+# 设置日志
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class LLMIntegration:
-    """大语言模型集成模块，用于处理情感分析和文本生成任务"""
+    """大语言模型集成模块，使用API调用代替本地模型"""
     
-    def __init__(self, model_type="huggingface", model_name="gpt2", api_key=None):
+    def __init__(self, api_type="openai", api_key=None, api_base=None):
         """
         初始化LLM集成模块
         
         Args:
-            model_type: 模型类型，可以是"huggingface"或"openai"
-            model_name: 模型名称
-            api_key: API密钥（如果使用OpenAI）
+            api_type: API类型，可以是"openai"、"azure"或"custom"
+            api_key: API密钥
+            api_base: API基础URL（用于自定义API）
         """
-        self.model_type = model_type
-        self.model_name = model_name
-        self.api_key = api_key
-        self.model = None
-        self.tokenizer = None
-        self.emotion_analyzer = None
+        self.api_type = api_type
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.api_base = api_base or os.getenv("API_BASE_URL")
         
-        # 尝试初始化模型
+        # 设置默认API端点
+        if self.api_type == "openai" and not self.api_base:
+            self.api_base = "https://api.openai.com/v1"
+        elif self.api_type == "azure" and not self.api_base:
+            self.api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
+    
+    def _call_api(self, endpoint: str, payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """通用API调用方法"""
         try:
-            self._initialize_model()
+            headers = {
+                "Content-Type": "application/json",
+            }
+            
+            if self.api_type == "openai":
+                headers["Authorization"] = f"Bearer {self.api_key}"
+                # DeepSeek API需要特殊处理
+                if "deepseek" in self.api_base:
+                    # DeepSeek使用不同的模型名称
+                    if "model" in payload:
+                        if payload["model"] == "gpt-3.5-turbo":
+                            payload["model"] = "deepseek-chat"
+                        elif payload["model"] == "text-embedding-ada-002":
+                            payload["model"] = "deepseek-embed"
+            elif self.api_type == "azure":
+                headers["api-key"] = self.api_key
+            
+            url = f"{self.api_base}{endpoint}"
+            
+            # 调试信息
+            logger.info(f"API Call: {url}")
+            logger.info(f"Headers: {headers}")
+            logger.info(f"Payload model: {payload.get('model')}")
+            
+            # 减少超时时间，避免因配额不足导致的长时间等待
+            response = requests.post(
+                url,
+                headers=headers,
+                json=payload,
+                timeout=10  # 增加到10秒
+            )
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.error(f"API call failed: {response.status_code} - {response.text}")
+                return None
+                
         except Exception as e:
-            logger.error(f"Failed to initialize LLM: {str(e)}")
-            self._initialize_fallback()
+            logger.error(f"API call error: {e}")
+            return None
     
-    def _initialize_model(self):
-        """根据配置初始化模型"""
-        if self.model_type == "huggingface":
-            # 使用Hugging Face的本地模型
-            if self.model_name == "gpt2":
-                self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-                self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
-            else:
-                # 使用更高级的Hugging Face模型
-                self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    self.model_name,
-                    torch_dtype=torch.float16,
-                    low_cpu_mem_usage=True,
-                    device_map="auto"
-                )
-            
-            # 初始化情感分析pipeline
-            self.emotion_analyzer = pipeline(
-                "text-classification",
-                model="SamLowe/roberta-base-go_emotions",
-                top_k=None
-            )
-        
-        elif self.model_type == "openai":
-            # 配置OpenAI API
-            if self.api_key:
-                openai.api_key = self.api_key
-            else:
-                openai.api_key = os.getenv("OPENAI_API_KEY")
-            
-            if not openai.api_key:
-                raise ValueError("OpenAI API key is required for OpenAI model type")
-        
-        logger.info(f"Successfully initialized {self.model_type} model: {self.model_name}")
-    
-    def _initialize_fallback(self):
-        """初始化回退模型（当无法加载主模型时使用）"""
-        logger.warning("Using fallback model")
-        # 使用简单的文本分类pipeline作为回退
-        try:
-            self.emotion_analyzer = pipeline(
-                "text-classification",
-                model="SamLowe/roberta-base-go_emotions",
-                top_k=None
-            )
-        except:
-            # 如果连回退模型都无法加载，则设置为None
-            self.emotion_analyzer = None
-    
-    def analyze_emotion(self, text, model_type="emo"):
+    def analyze_emotion(self, text: str) -> str:
         """
         分析文本中的情感
         
         Args:
             text: 要分析的文本
-            model_type: 分析类型，可以是"emo"（情感）或其他
         
         Returns:
             分析结果（情感标签）
         """
-        # 预处理文本
         text = text.strip().lower()
         if not text:
             return "neutral"
         
         try:
-            if self.model_type == "openai":
+            if self.api_type in ["openai", "azure"]:
                 # 使用OpenAI API进行情感分析
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "You are an emotion analysis assistant. Please classify the user's emotion as one of: happy, sad, angry, anxious, jealous, guilty, ashamed, envious, disgusted, disappointed, loving, insecure, neutral."},
-                        {"role": "user", "content": text}
+                payload = {
+                    "model": "gpt-3.5-turbo",
+                    "messages": [
+                        {
+                            "role": "system", 
+                            "content": "你是一个情感分析助手。请将用户的情感分类为：happy, sad, angry, anxious, neutral。只返回情感标签，不要其他内容。"
+                        },
+                        {
+                            "role": "user", 
+                            "content": text
+                        }
                     ],
-                    max_tokens=10,
-                    temperature=0
-                )
-                emotion = response.choices[0].message.content.strip().lower()
-                return emotion
-            
-            elif self.emotion_analyzer:
-                # 使用Hugging Face的情感分析pipeline
-                results = self.emotion_analyzer(text)
-                # 转换为我们系统所需的情感标签
-                emotion_map = {
-                    "sadness": "sad",
-                    "fear": "anxious",
-                    "anger": "angry",
-                    "joy": "happy",
-                    "love": "loving",
-                    "surprise": "happy",
-                    "gratitude": "happy",
-                    "pride": "happy",
-                    "optimism": "happy",
-                    "excitement": "happy",
-                    "disappointment": "disappointed",
-                    "disgust": "disgusted",
-                    "grief": "sad",
-                    "embarrassment": "ashamed",
-                    "remorse": "guilty",
-                    "desire": "happy",
-                    "admiration": "happy",
-                    "curiosity": "happy"
+                    "max_tokens": 10,
+                    "temperature": 0
                 }
                 
-                # 获取最高置信度的情感
-                top_emotion = max(results[0], key=lambda x: x['score'])['label']
-                return emotion_map.get(top_emotion, "neutral")
+                result = self._call_api("/chat/completions", payload)
+                if result and "choices" in result:
+                    emotion = result["choices"][0]["message"]["content"].strip().lower()
+                    # 确保返回标准的情感标签
+                    valid_emotions = ["happy", "sad", "angry", "anxious", "neutral"]
+                    return emotion if emotion in valid_emotions else "neutral"
             
-            else:
-                # 如果没有可用的情感分析器，返回中性
-                return "neutral"
+            # 回退到关键词匹配
+            emotion_keywords = {
+                "happy": ["开心", "高兴", "快乐", "幸福", "愉快"],
+                "sad": ["伤心", "难过", "悲伤", "沮丧", "失望"],
+                "angry": ["生气", "愤怒", "恼火", "烦躁", "不满"],
+                "anxious": ["焦虑", "紧张", "担心", "不安", "压力"]
+            }
+            
+            for emotion, keywords in emotion_keywords.items():
+                if any(keyword in text for keyword in keywords):
+                    return emotion
+            
+            return "neutral"
+            
         except Exception as e:
-            logger.error(f"Emotion analysis failed: {str(e)}")
+            logger.error(f"Emotion analysis failed: {e}")
             return "neutral"
     
-    def generate_response(self, prompt, max_length=200, temperature=0.7):
+    def generate_response(self, prompt: str, max_length: int = 300, temperature: float = 0.7) -> str:
         """
         生成文本响应
         
         Args:
             prompt: 提示文本
             max_length: 最大生成长度
-            temperature: 生成温度（控制随机性）
+            temperature: 生成温度
         
         Returns:
             生成的响应文本
         """
         try:
-            if self.model_type == "openai":
+            if self.api_type in ["openai", "azure"]:
                 # 使用OpenAI API生成响应
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=max_length,
-                    temperature=temperature
-                )
-                return response.choices[0].message.content.strip()
+                payload = {
+                    "model": "gpt-3.5-turbo",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "你是一个 empathetic therapeutic AI companion. 用中文回答，保持温暖、支持性和专业性。"
+                        },
+                        {
+                            "role": "user", 
+                            "content": prompt
+                        }
+                    ],
+                    "max_tokens": max_length,
+                    "temperature": temperature
+                }
+                
+                result = self._call_api("/chat/completions", payload)
+                if result and "choices" in result:
+                    return result["choices"][0]["message"]["content"].strip()
             
-            elif self.model:
-                # 使用Hugging Face模型生成响应
-                inputs = self.tokenizer(prompt, return_tensors="pt")
-                
-                # 确保在正确的设备上运行
-                if torch.cuda.is_available():
-                    inputs = {k: v.cuda() for k, v in inputs.items()}
-                
-                # 生成响应
-                outputs = self.model.generate(
-                    **inputs,
-                    max_length=max_length,
-                    temperature=temperature,
-                    do_sample=True,
-                    pad_token_id=self.tokenizer.eos_token_id
-                )
-                
-                # 解码并返回响应
-                return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            # 回退响应
+            fallback_responses = [
+                "我在这里为您提供支持。请告诉我更多关于您的感受。",
+                "感谢您的消息。我理解这可能不容易，我会尽力帮助您。",
+                "我在这里倾听您。请随时分享您的想法和感受。"
+            ]
             
-            else:
-                # 如果没有可用的模型，返回默认响应
-                return "I'm here to help you. Please tell me more about how you're feeling."
+            import random
+            return random.choice(fallback_responses)
+            
         except Exception as e:
-            logger.error(f"Response generation failed: {str(e)}")
-            return "I'm sorry, I'm having trouble responding right now. Please try again later."
+            logger.error(f"Response generation failed: {e}")
+            return "抱歉，我暂时无法处理您的请求。请稍后再试。"
     
-    def enhance_with_context(self, user_id, current_prompt, conversation_history=None):
-        """
-        使用用户历史、上下文和RAG增强提示
-        
-        Args:
-            user_id: 用户ID
-            current_prompt: 当前提示
-            conversation_history: 对话历史
-        
-        Returns:
-            增强后的提示
-        """
-        # Get conversation history context
-        history_context = ""
-        if conversation_history:
-            history_context = "\n".join([f"{'User' if msg['role'] == 'user' else 'Assistant'}: {msg['content']}" for msg in conversation_history[-3:]])
-        
-        # Get RAG context from psychology documents
-        rag_context = ""
-        try:
-            from backend.models.rag_system import rag_system
-            rag_context = rag_system.enhance_prompt_with_context(current_prompt, user_id)
-        except Exception as e:
-            logger.error(f"RAG context enhancement failed: {e}")
-        
-        # Combine all contexts
-        if history_context and rag_context:
-            enhanced_prompt = f"""Conversation History:
-{history_context}
-
-Psychology Knowledge Context:
-{rag_context}
-
-Please respond to the user's current message: {current_prompt}
-
-Respond as an empathetic therapeutic AI companion."""
-        elif history_context:
-            enhanced_prompt = f"Here's the conversation history:\n{history_context}\n\nBased on this, respond to: {current_prompt}"
-        elif rag_context:
-            enhanced_prompt = rag_context
-        else:
-            enhanced_prompt = current_prompt
-        
-        return enhanced_prompt
-    
-    def analyze_intention(self, text):
+    def analyze_intention(self, text: str) -> str:
         """
         分析文本中的意图（特别是自杀意图）
         
@@ -256,44 +193,50 @@ Respond as an empathetic therapeutic AI companion."""
         Returns:
             's' 表示有自杀意图，'not_s' 表示没有自杀意图
         """
-        # 预处理文本
         text = text.strip().lower()
         if not text:
             return "not_s"
         
         try:
-            if self.model_type == "openai":
-                # 使用OpenAI API进行意图分析
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "You are a mental health assistant. Analyze the user's text to determine if they are expressing suicidal intent. Respond with 's' if there is suicidal intent, 'not_s' if there is no suicidal intent."},
-                        {"role": "user", "content": text}
+            if self.api_type in ["openai", "azure"]:
+                payload = {
+                    "model": "gpt-3.5-turbo",
+                    "messages": [
+                        {
+                            "role": "system", 
+                            "content": "你是心理健康助手。分析用户文本是否表达自杀意图。只返回's'或'not_s'，不要其他内容。"
+                        },
+                        {
+                            "role": "user", 
+                            "content": text
+                        }
                     ],
-                    max_tokens=10,
-                    temperature=0
-                )
-                result = response.choices[0].message.content.strip().lower()
-                return "s" if result == "s" else "not_s"
+                    "max_tokens": 5,
+                    "temperature": 0
+                }
+                
+                result = self._call_api("/chat/completions", payload)
+                if result and "choices" in result:
+                    intention = result["choices"][0]["message"]["content"].strip().lower()
+                    return "s" if intention == "s" else "not_s"
             
-            else:
-                # 使用关键词匹配作为回退方法
-                # 这只是一个简单的实现，实际应用中应该使用更复杂的模型
-                suicidal_keywords = [
-                    "suicide", "kill myself", "end my life", "want to die", 
-                    "not worth living", "better off dead", "no reason to live"
-                ]
-                
-                for keyword in suicidal_keywords:
-                    if keyword in text:
-                        return "s"
-                
-                return "not_s"
+            # 关键词匹配回退
+            suicidal_keywords = [
+                "自杀", "不想活了", "结束生命", "离开这个世界", 
+                "活着没意思", "撑不下去了", "想死"
+            ]
+            
+            for keyword in suicidal_keywords:
+                if keyword in text:
+                    return "s"
+            
+            return "not_s"
+            
         except Exception as e:
-            logger.error(f"Intention analysis failed: {str(e)}")
+            logger.error(f"Intention analysis failed: {e}")
             return "not_s"
     
-    def get_semantic_similarity(self, text1, text2):
+    def get_semantic_similarity(self, text1: str, text2: str) -> float:
         """
         计算两个文本之间的语义相似度
         
@@ -305,47 +248,44 @@ Respond as an empathetic therapeutic AI companion."""
             相似度分数（0-1之间）
         """
         try:
-            if self.model_type == "openai":
-                # 使用OpenAI API计算语义相似度
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "You are a semantic similarity assistant. Rate the semantic similarity between the two texts on a scale of 0 to 1, where 0 means completely dissimilar and 1 means identical. Respond with only the numerical value."},
-                        {"role": "user", "content": f"Text 1: {text1}\nText 2: {text2}"}
-                    ],
-                    max_tokens=10,
-                    temperature=0
-                )
-                try:
-                    similarity = float(response.choices[0].message.content.strip())
-                    # 确保返回值在0-1之间
-                    return max(0.0, min(1.0, similarity))
-                except ValueError:
-                    logger.error("Failed to parse similarity score from OpenAI response")
-                    return 0.5  # 回退到中性值
+            if self.api_type in ["openai", "azure"]:
+                payload = {
+                    "model": "text-embedding-ada-002",
+                    "input": [text1, text2]
+                }
+                
+                result = self._call_api("/embeddings", payload)
+                if result and "data" in result:
+                    import numpy as np
+                    from numpy.linalg import norm
+                    
+                    # 计算余弦相似度
+                    emb1 = np.array(result["data"][0]["embedding"])
+                    emb2 = np.array(result["data"][1]["embedding"])
+                    
+                    similarity = np.dot(emb1, emb2) / (norm(emb1) * norm(emb2))
+                    return float(similarity)
             
-            else:
-                # 使用简单的文本相似度计算作为回退
-                # 这只是一个简单的实现，实际应用中应该使用更复杂的模型
-                # 例如，可以使用Sentence-BERT或其他专门的语义相似度模型
-                import difflib
-                return difflib.SequenceMatcher(None, text1, text2).ratio()
+            # 简单的文本相似度回退
+            import difflib
+            return difflib.SequenceMatcher(None, text1, text2).ratio()
+            
         except Exception as e:
-            logger.error(f"Semantic similarity calculation failed: {str(e)}")
-            return 0.5  # 回退到中性值
-
+            logger.error(f"Semantic similarity calculation failed: {e}")
+            return 0.5
+        
 # 创建LLM集成实例
 def get_llm_integration():
     """获取LLM集成实例的工厂函数"""
     # 从环境变量获取配置
-    model_type = os.getenv("LLM_MODEL_TYPE", "huggingface")
-    model_name = os.getenv("LLM_MODEL_NAME", "gpt2")
+    api_type = os.getenv("LLM_API_TYPE", "openai")
     api_key = os.getenv("OPENAI_API_KEY")
+    api_base = os.getenv("API_BASE_URL")
     
     return LLMIntegration(
-        model_type=model_type,
-        model_name=model_name,
-        api_key=api_key
+        api_type=api_type,
+        api_key=api_key,
+        api_base=api_base
     )
 
 # 全局LLM实例，懒加载
@@ -357,3 +297,4 @@ def get_llm():
     if _llm_instance is None:
         _llm_instance = get_llm_integration()
     return _llm_instance
+

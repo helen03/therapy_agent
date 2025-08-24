@@ -17,9 +17,14 @@ load_dotenv(os.path.join(basedir, ".env"))
 
 
 # For dev logging - comment out for Gunicorn
+# Configure logging to both console and file
 logging.basicConfig(
     level=logging.INFO,
     format=f"%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s",
+    handlers=[
+        logging.FileHandler('/Users/liuyanjun/therapy_agent/logs/backend.log'),
+        logging.StreamHandler()
+    ]
 )
 
 # ~ Databases ~ #
@@ -112,11 +117,29 @@ def create_app():
         try:
             user = User.query.filter_by(username=username, password=password).first()
             if user:
-                return {"success": True, "user_id": user.id}
+                # Create a new session for the user
+                user_session = UserModelSession(user_id=user.id)
+                db.session.add(user_session)
+                db.session.commit()
+                
+                # Get initial response from decision maker
+                from backend.models.rule_based_model import decision_maker
+                initial_output = decision_maker.determine_next_choice(
+                    user.id, "any", None, db.session, user_session, app
+                )
+                
+                return {
+                    "success": True, 
+                    "validID": True,
+                    "userID": user.id,
+                    "sessionID": user_session.id,
+                    "model_prompt": initial_output["model_prompt"],
+                    "choices": initial_output["choices"]
+                }
             else:
-                return {"success": False, "error": "Invalid username or password"}, 401
+                return {"success": False, "validID": False, "error": "Invalid username or password"}, 401
         except Exception as e:
-            return {"success": False, "error": str(e)}, 500
+            return {"success": False, "validID": False, "error": str(e)}, 500
 
     # Add new API endpoints for enhanced features
     @app.route('/api/upload_document', methods=['POST'])
@@ -206,12 +229,12 @@ def create_app():
             app.logger.error(f"Tool execution failed: {e}")
             return {"success": False, "error": str(e)}, 500
 
-    # Core therapy session update endpoint
+    # Core therapy session update endpoint - Now using LLM
     @app.route("/api/update_session", methods=["POST"])
     def update_session():
-        """Update therapy session with user choice and get next response"""
+        """Update therapy session with user message and get LLM response"""
         try:
-            from backend.models.rule_based_model import decision_maker
+            from backend.services.llm_therapy_service import therapy_service
             
             choice_info = json.loads(request.data)["choice_info"]
             user_id = choice_info["user_id"]
@@ -229,11 +252,11 @@ def create_app():
             user_session = UserModelSession.query.filter_by(id=session_id).first()
 
             # Store conversation in memory system
-            conversation_text = f"User choice: {user_choice}, Input type: {input_type}"
+            conversation_text = f"User message: {user_choice}, Input type: {input_type}"
             therapeutic_context = {
                 "session_id": session_id,
                 "input_type": input_type,
-                "exercise_phase": decision_maker.user_choices.get(user_id, {}).get("choices_made", {}).get("current_choice", "unknown")
+                "message_type": "user_input"
             }
             
             memory_manager.store_conversation(
@@ -244,24 +267,10 @@ def create_app():
                 therapeutic_context=therapeutic_context
             )
 
-            # Process user choice and determine next response
-            decision_maker.save_current_choice(
-                user_id, input_type, user_choice, user_session, db.session, app
+            # Process user message using LLM therapy service
+            response_data = therapy_service.process_message(
+                user_id, session_id, user_choice, input_type
             )
-            
-            output = decision_maker.determine_next_choice(
-                user_id, input_type, user_choice, db.session, user_session, app
-            )
-            
-            # Enhance response with memory context if available
-            if "model_prompt" in output:
-                current_context = f"Therapeutic context: {input_type}, User choice: {user_choice}"
-                enhanced_response = memory_manager.enhance_response_with_memory(
-                    user_id=str(user_id),
-                    proposed_response=output["model_prompt"],
-                    current_context=current_context
-                )
-                output["model_prompt"] = enhanced_response
             
             # Update last accessed time
             if user:
@@ -269,12 +278,86 @@ def create_app():
                 db.session.commit()
 
             return {
-                "chatbot_response": output["model_prompt"],
-                "user_options": output["choices"],
+                "chatbot_response": response_data["response"],
+                "user_options": response_data["options"],
+                "emotion": response_data.get("emotion", "neutral"),
+                "requires_followup": response_data.get("requires_followup", False)
             }
             
         except Exception as e:
             app.logger.error(f"Session update failed: {e}")
             return {"success": False, "error": str(e)}, 500
 
+    # Mobile and mini-program chat endpoint
+    @app.route('/api/chat', methods=['POST'])
+    def chat_endpoint():
+        """Direct chat endpoint for mobile and mini-program clients"""
+        try:
+            from backend.services.llm_therapy_service import therapy_service
+            
+            data = request.get_json()
+            message = data.get('message', '')
+            session_id = data.get('session_id', '')
+            user_id = data.get('user_id', 'mobile_user')
+            
+            if not message:
+                return {"success": False, "error": "Message is required"}, 400
+            
+            # Process message using LLM therapy service
+            response_data = therapy_service.process_message(
+                user_id, session_id, message, "text"
+            )
+            
+            return {
+                "success": True,
+                "response": response_data["response"],
+                "options": response_data["options"],
+                "emotion": response_data.get("emotion", "neutral"),
+                "requires_followup": response_data.get("requires_followup", False),
+                "session_id": session_id,
+                "user_id": user_id
+            }
+            
+        except Exception as e:
+            app.logger.error(f"Chat endpoint error: {e}")
+            return {"success": False, "error": "服务器内部错误"}, 500
+    
+    # Mobile login endpoint
+    @app.route('/api/mobile_login', methods=['POST'])
+    def mobile_login():
+        """Mobile and mini-program login endpoint"""
+        try:
+            from backend.services.llm_therapy_service import therapy_service
+            
+            data = request.get_json()
+            username = data.get('username', 'Mobile User')
+            
+            # Create or get user
+            user = User.query.filter_by(username=username).first()
+            if not user:
+                user = User(username=username, password=f'mobile_{datetime.datetime.now().timestamp()}')
+                db.session.add(user)
+                db.session.commit()
+            
+            # Create session
+            user_session = UserModelSession(user_id=user.id)
+            db.session.add(user_session)
+            db.session.commit()
+            
+            # Initialize session with LLM
+            session_data = therapy_service.initialize_session(user.id, user_session.id)
+            
+            return {
+                "success": True,
+                "token": f"mobile_token_{user.id}_{user_session.id}",
+                "user_id": user.id,
+                "session_id": user_session.id,
+                "initial_response": session_data["response"],
+                "initial_options": session_data["options"]
+            }
+            
+        except Exception as e:
+            app.logger.error(f"Mobile login error: {e}")
+            return {"success": False, "error": "登录失败"}, 500
+    
     return app

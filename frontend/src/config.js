@@ -12,7 +12,7 @@ import YesNoProtocolOptions from "./widgets/options/GeneralOptions/YesNoProtocol
 
 // import Kai from "./Kai.png"
 
-const botName = "SATbot";
+const botName = "MindGuide";
 
 // export const getPersona = () => {
 
@@ -24,7 +24,7 @@ const botName = "SATbot";
 const config = {
   botName: botName,
   initialMessages: [
-    createChatBotMessage("Hi, I am SATbot, welcome to today's session.", {
+    createChatBotMessage("Hi, I am MindGuide, welcome to today's session.", {
       withAvatar: true,
       delay: 0,
     }),
@@ -48,7 +48,7 @@ const config = {
   },
 
   customComponents: {
-    header: () => <div style={{height: '15px', fontFamily: 'Trebuchet MS', fontSize: "1em", textAlign: "center", color: '#fff', paddingTop: '1em', paddingBottom: '1em'}}>S A T B O T</div>,
+    header: () => <div style={{height: '15px', fontFamily: 'Trebuchet MS', fontSize: "1em", textAlign: "center", color: '#fff', paddingTop: '1em', paddingBottom: '1em'}}>MindGuide</div>,
     // botAvatar: (props) => <div class="react-chatbot-kit-chat-bot-avatar-container" style={{fontFamily: 'Arial'}}>
     //   {getPersona()} </div>
     },

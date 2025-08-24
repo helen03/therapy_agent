@@ -44,7 +44,7 @@ App({
   
   // 登录方法
   login(userInfo) {
-    return this.apiRequest('/login', {
+    return this.apiRequest('/mobile_login', {
       username: userInfo.nickName,
       avatar: userInfo.avatarUrl
     })
@@ -54,7 +54,8 @@ App({
   sendMessage(message, sessionId) {
     return this.apiRequest('/chat', {
       message: message,
-      session_id: sessionId
+      session_id: sessionId,
+      user_id: wx.getStorageSync('user_id') || 'mini_user'
     })
   },
   
