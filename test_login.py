@@ -4,7 +4,7 @@ import requests
 import json
 
 # 后端API地址
-BACKEND_URL = 'http://127.0.0.1:5002/api/login'
+BACKEND_URL = 'http://127.0.0.1:5000/api/login'
 
 # 测试登录函数
 def test_login(username, password):

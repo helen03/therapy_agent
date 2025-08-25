@@ -197,7 +197,7 @@ const response = await axios.post(`${apiBaseUrl}/api/login`, {
 - 返回格式化响应
 
 ## 测试和调试
-
+， 
 ### 1. API 测试脚本
 **文件**: <mcfile name="test_api.py" path="/Users/liuyanjun/therapy_agent/backend/test_api.py"></mcfile> (第 1-70 行)
 

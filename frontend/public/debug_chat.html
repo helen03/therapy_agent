@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天功能调试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .debug-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .chat-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+            text-align: right;
+        }
+        .bot-message {
+            background: #f1f1f1;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        #log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔧 聊天功能调试工具</h1>
+        
+        <div class="chat-section">
+            <h2>1. 登录测试</h2>
+            <button onclick="testLogin()">测试登录</button>
+            <div id="login-status"></div>
+        </div>
+        
+        <div class="chat-section">
+            <h2>2. 聊天测试</h2>
+            <div>
+                <input type="text" id="message-input" placeholder="输入消息..." value="我感觉很好">
+                <button onclick="sendMessage()">发送消息</button>
+                <button onclick="testMultipleMessages()">测试多条消息</button>
+                <button onclick="testStateCheck()">测试状态检查</button>
+            </div>
+            <div id="chat-status"></div>
+        </div>
+        
+        <div class="chat-section">
+            <h2>3. 聊天记录</h2>
+            <div id="chat-history"></div>
+        </div>
+        
+        <div class="chat-section">
+            <h2>4. 调试日志</h2>
+            <div id="log"></div>
+            <button onclick="clearLog()">清除日志</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentSession = null;
+        let messageCount = 0;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logDiv.textContent += logEntry + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(logEntry);
+        }
+        
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function addChatMessage(message, isUser = false) {
+            const chatHistory = document.getElementById('chat-history');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.innerHTML = `<strong>${isUser ? '用户' : '机器人'}:</strong> ${message}`;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        async function testLogin() {
+            showStatus('login-status', '正在测试登录...', 'info');
+            log('开始登录测试');
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_info: {
+                            username: 'user1',
+                            password: 'ph6n76gec9'
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                log(`登录响应: ${JSON.stringify(data)}`);
+                
+                if (data.success) {
+                    currentUser = data.userID;
+                    currentSession = data.sessionID;
+                    showStatus('login-status', 
+                        `✅ 登录成功！<br>用户ID: ${data.userID}<br>会话ID: ${data.sessionID}<br>初始消息: ${data.model_prompt || 'N/A'}`, 
+                        'success'
+                    );
+                    addChatMessage(`欢迎 ${data.username}！今天感觉怎么样？`, false);
+                    log('登录成功，用户信息已保存');
+                } else {
+                    showStatus('login-status', `❌ 登录失败: ${data.error}`, 'error');
+                    log('登录失败: ' + data.error);
+                }
+            } catch (error) {
+                showStatus('login-status', `❌ 登录异常: ${error.message}`, 'error');
+                log('登录异常: ' + error.message);
+            }
+        }
+        
+        async function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                showStatus('chat-status', '❌ 请输入消息', 'error');
+                return;
+            }
+            
+            if (!currentUser || !currentSession) {
+                showStatus('chat-status', '❌ 请先登录', 'error');
+                log('发送消息失败：用户未登录');
+                return;
+            }
+            
+            addChatMessage(message, true);
+            showStatus('chat-status', '正在发送消息...', 'info');
+            log(`发送消息: "${message}"`);
+            
+            try {
+                const requestData = {
+                    choice_info: {
+                        user_id: currentUser,
+                        session_id: currentSession,
+                        user_choice: message
+                    }
+                };
+                
+                log(`请求数据: ${JSON.stringify(requestData)}`);
+                
+                const response = await fetch('http://localhost:5001/api/update_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                log(`响应数据: ${JSON.stringify(data)}`);
+                
+                if (data.chatbot_response) {
+                    addChatMessage(data.chatbot_response, false);
+                    showStatus('chat-status', 
+                        `✅ 消息发送成功！<br>回复: ${data.chatbot_response}<br>选项: ${JSON.stringify(data.user_options || [])}`, 
+                        'success'
+                    );
+                    log('聊天回复成功');
+                } else {
+                    showStatus('chat-status', `❌ 消息发送失败: ${data.error || '未知错误'}`, 'error');
+                    log('聊天回复失败: ' + (data.error || '未知错误'));
+                }
+            } catch (error) {
+                showStatus('chat-status', `❌ 消息发送异常: ${error.message}`, 'error');
+                log('消息发送异常: ' + error.message);
+            }
+            
+            messageInput.value = '';
+        }
+        
+        async function testMultipleMessages() {
+            const testMessages = [
+                "我感觉很好",
+                "Continue",
+                "Happy",
+                "你好，我想聊聊"
+            ];
+            
+            showStatus('chat-status', '开始批量测试...', 'info');
+            log('开始批量消息测试');
+            
+            for (let i = 0; i < testMessages.length; i++) {
+                const message = testMessages[i];
+                log(`测试消息 ${i+1}: "${message}"`);
+                
+                // 设置输入框的值
+                document.getElementById('message-input').value = message;
+                
+                // 等待一段时间再发送
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 发送消息
+                await sendMessage();
+                
+                // 等待回复
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            
+            showStatus('chat-status', '批量测试完成！', 'success');
+            log('批量消息测试完成');
+        }
+        
+        // 测试状态检查
+        async function testStateCheck() {
+            showStatus('chat-status', '测试状态检查...', 'info');
+            log('开始状态检查测试');
+            
+            if (!currentUser || !currentSession) {
+                showStatus('chat-status', '❌ 用户未登录，请先登录', 'error');
+                return;
+            }
+            
+            // 测试不同的输入类型
+            const testInputs = [
+                "任何文本输入",
+                "Continue",
+                "Yes",
+                "No",
+                "Happy",
+                "Sad",
+                "Angry",
+                "Neutral",
+                "Recent",
+                "Distant",
+                "Better",
+                "Worse",
+                "No change"
+            ];
+            
+            for (let i = 0; i < testInputs.length; i++) {
+                const input = testInputs[i];
+                log(`测试输入: "${input}"`);
+                
+                document.getElementById('message-input').value = input;
+                await sendMessage();
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            
+            showStatus('chat-status', '状态检查测试完成！', 'success');
+            log('状态检查测试完成');
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+            log('日志已清除');
+        }
+        
+        // 页面加载时自动测试登录
+        window.onload = function() {
+            log('页面加载完成，调试工具已就绪');
+            showStatus('login-status', '页面已加载，点击"测试登录"开始调试', 'info');
+        };
+    </script>
+</body>
+</html>

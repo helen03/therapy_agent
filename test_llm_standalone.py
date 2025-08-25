@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+"""
+Standalone LLM test
+"""
 import os
 import logging
 import requests
@@ -275,58 +279,6 @@ class LLMIntegration:
         except Exception as e:
             logger.error(f"Intention analysis failed: {e}")
             return "not_s"
-    
-    def get_semantic_similarity(self, text1: str, text2: str) -> float:
-        """
-        计算两个文本之间的语义相似度
-        
-        Args:
-            text1: 第一个文本
-            text2: 第二个文本
-        
-        Returns:
-            相似度分数（0-1之间）
-        """
-        try:
-            if self.api_type in ["openai", "azure"]:
-                payload = {
-                    "model": "text-embedding-ada-002",
-                    "input": [text1, text2]
-                }
-                
-                result = self._call_api("/embeddings", payload)
-                if result and "data" in result:
-                    import numpy as np
-                    from numpy.linalg import norm
-                    
-                    # 计算余弦相似度
-                    emb1 = np.array(result["data"][0]["embedding"])
-                    emb2 = np.array(result["data"][1]["embedding"])
-                    
-                    similarity = np.dot(emb1, emb2) / (norm(emb1) * norm(emb2))
-                    return float(similarity)
-            
-            # 简单的文本相似度回退
-            import difflib
-            return difflib.SequenceMatcher(None, text1, text2).ratio()
-            
-        except Exception as e:
-            logger.error(f"Semantic similarity calculation failed: {e}")
-            return 0.5
-        
-# 创建LLM集成实例
-def get_llm_integration():
-    """获取LLM集成实例的工厂函数"""
-    # 从环境变量获取配置
-    api_type = os.getenv("LLM_API_TYPE", "openai")
-    api_key = os.getenv("OPENAI_API_KEY")
-    api_base = os.getenv("API_BASE_URL")
-    
-    return LLMIntegration(
-        api_type=api_type,
-        api_key=api_key,
-        api_base=api_base
-    )
 
 class MockLLM:
     """模拟LLM类，用于API不可用时的回退"""
@@ -381,30 +333,71 @@ class MockLLM:
                 return "s"
         
         return "not_s"
+
+def test_llm():
+    """测试LLM功能"""
+    print("=== Testing LLM Integration ===")
     
-    def get_semantic_similarity(self, text1: str, text2: str) -> float:
-        """模拟语义相似度"""
-        import difflib
-        return difflib.SequenceMatcher(None, text1, text2).ratio()
-
-# 全局LLM实例，懒加载
-_llm_instance = None
-
-def get_llm():
-    """获取全局LLM实例"""
-    global _llm_instance
-    if _llm_instance is None:
-        print("Initializing LLM instance...")
+    # Test MockLLM
+    print("\n--- Testing MockLLM ---")
+    mock_llm = MockLLM()
+    
+    print(f"MockLLM Type: {mock_llm.api_type}")
+    
+    # Test emotion analysis
+    emotion_tests = [
+        ("我感到很开心", "happy"),
+        ("我很伤心", "sad"),
+        ("我很生气", "angry"),
+        ("我很焦虑", "anxious"),
+        ("我感觉一般", "neutral")
+    ]
+    
+    for text, expected in emotion_tests:
+        result = mock_llm.analyze_emotion(text)
+        status = "✅" if result == expected else "❌"
+        print(f"{status} '{text}' -> {result} (expected: {expected})")
+    
+    # Test response generation
+    print("\nTesting response generation...")
+    response = mock_llm.generate_response("Hello", 50)
+    print(f"Generated response: {response}")
+    
+    # Test intention analysis
+    intention_tests = [
+        ("我想好好活着", "not_s"),
+        ("我感到很绝望", "not_s"),
+        ("我想自杀", "s"),
+        ("我不想活了", "s")
+    ]
+    
+    for text, expected in intention_tests:
+        result = mock_llm.analyze_intention(text)
+        status = "✅" if result == expected else "❌"
+        print(f"{status} '{text}' -> {result} (expected: {expected})")
+    
+    # Test real LLM if API key is available
+    print("\n--- Testing Real LLM ---")
+    api_key = os.getenv("OPENAI_API_KEY")
+    api_base = os.getenv("API_BASE_URL")
+    
+    if api_key:
+        print("API key found, testing real LLM...")
+        real_llm = LLMIntegration(api_key=api_key, api_base=api_base)
+        
+        print(f"LLM Type: {real_llm.api_type}")
+        print(f"API Base: {real_llm.api_base}")
+        
+        # Test a simple call
         try:
-            # 配置LLM参数
-            # 这里应该有从环境变量或配置文件读取API密钥和其他参数的代码
-            # 由于没有具体的LLM提供商信息，我们先使用一个通用的实现
-            _llm_instance = get_llm_integration()
-            print("LLM instance initialized successfully!")
+            response = real_llm.generate_response("Hello", 20)
+            print(f"Real LLM response: {response}")
         except Exception as e:
-            print(f"Failed to initialize LLM instance: {e}")
-            # 在实际应用中，这里可能会设置一个回退机制或使用模拟的LLM响应
-            # 为了演示，我们创建一个简单的模拟LLM实例
-            _llm_instance = MockLLM()
-    return _llm_instance
+            print(f"Real LLM test failed: {e}")
+    else:
+        print("No API key found - skipping real LLM test")
+    
+    print("\n✅ LLM testing completed!")
 
+if __name__ == "__main__":
+    test_llm()

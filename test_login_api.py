@@ -2,7 +2,7 @@ import requests
 import json
 
 # 设置API基础URL
-base_url = 'http://localhost:5002/api'
+base_url = 'http://localhost:5000/api'
 
 # 测试登录功能
 def test_login():

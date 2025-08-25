@@ -5,6 +5,11 @@
 # # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 from flask_sqlalchemy import SQLAlchemy
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 db = SQLAlchemy()
 from sqlalchemy import DateTime
@@ -32,16 +37,31 @@ class User(db.Model):  # noqa
 
     def set_password(self, password):
         """Hash and set password"""
+        if not password:
+            raise ValueError("Password cannot be empty")
         salt = bcrypt.gensalt()
         self.password_hash = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
     def check_password(self, password):
         """Check if password matches hash"""
-        return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
+        if not password or not self.password_hash:
+            return False
+        try:
+            return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
+        except Exception as e:
+            # Log the error for debugging
+            logger.error(f"Password check failed: {e}")
+            return False
 
     def generate_auth_token(self, expires_in=3600):
         """Generate JWT token"""
-        secret_key = os.getenv('JWT_SECRET_KEY', 'fallback-secret-key-change-in-production')
+        secret_key = os.getenv('JWT_SECRET_KEY')
+        if not secret_key:
+            # In production, this should be an error
+            if os.getenv('FLASK_ENV') == 'production':
+                raise ValueError("JWT_SECRET_KEY environment variable must be set in production")
+            # Fallback for development only
+            secret_key = 'fallback-secret-key-change-in-production'
         return jwt.encode(
             {'user_id': self.id, 'exp': datetime.utcnow() + timedelta(seconds=expires_in)},
             secret_key,
@@ -51,7 +71,13 @@ class User(db.Model):  # noqa
     @staticmethod
     def verify_auth_token(token):
         """Verify JWT token"""
-        secret_key = os.getenv('JWT_SECRET_KEY', 'fallback-secret-key-change-in-production')
+        secret_key = os.getenv('JWT_SECRET_KEY')
+        if not secret_key:
+            # In production, this should be an error
+            if os.getenv('FLASK_ENV') == 'production':
+                raise ValueError("JWT_SECRET_KEY environment variable must be set in production")
+            # Fallback for development only
+            secret_key = 'fallback-secret-key-change-in-production'
         try:
             data = jwt.decode(token, secret_key, algorithms=['HS256'])
             return User.query.get(data['user_id'])

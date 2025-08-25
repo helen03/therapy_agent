@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络请求测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        #log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .chat-test {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🌐 网络请求测试</h1>
+        
+        <div class="test-section">
+            <h2>1. 基础网络测试</h2>
+            <button onclick="testBasicConnection()">测试基础连接</button>
+            <button onclick="testCORS()">测试CORS</button>
+            <button onclick="testLoginAPI()">测试登录API</button>
+            <div id="basic-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. 聊天API测试</h2>
+            <button onclick="testChatAPI()">测试聊天API</button>
+            <button onclick="testMultipleRequests()">测试连续请求</button>
+            <div id="chat-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. 模拟前端请求</h2>
+            <div class="chat-test">
+                <h3>前端请求模拟器</h3>
+                <input type="text" id="message-input" placeholder="输入消息..." value="我感觉很好">
+                <button onclick="simulateFrontendRequest()">模拟前端请求</button>
+                <div id="frontend-response"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>4. 详细日志</h2>
+            <div id="log"></div>
+            <button onclick="clearLog()">清除日志</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentSession = null;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logDiv.textContent += logEntry + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(logEntry);
+        }
+        
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        async function testBasicConnection() {
+            showStatus('basic-status', '测试基础连接...', 'info');
+            log('开始测试基础连接');
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_info: { username: 'user1', password: 'ph6n76gec9' }
+                    })
+                });
+                
+                log(`响应状态: ${response.status}`);
+                log(`响应头: ${JSON.stringify([...response.headers.entries()])}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`响应数据: ${JSON.stringify(data)}`);
+                    showStatus('basic-status', '✅ 基础连接成功', 'success');
+                } else {
+                    showStatus('basic-status', `❌ 基础连接失败: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showStatus('basic-status', `❌ 基础连接异常: ${error.message}`, 'error');
+                log(`基础连接异常: ${error.message}`);
+            }
+        }
+        
+        async function testCORS() {
+            showStatus('basic-status', '测试CORS...', 'info');
+            log('开始测试CORS');
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': 'http://localhost:3000',
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type',
+                    }
+                });
+                
+                log(`OPTIONS响应状态: ${response.status}`);
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                };
+                log(`CORS头: ${JSON.stringify(corsHeaders)}`);
+                
+                if (corsHeaders['Access-Control-Allow-Origin']) {
+                    showStatus('basic-status', '✅ CORS配置正常', 'success');
+                } else {
+                    showStatus('basic-status', '❌ CORS配置有问题', 'error');
+                }
+            } catch (error) {
+                showStatus('basic-status', `❌ CORS测试异常: ${error.message}`, 'error');
+                log(`CORS测试异常: ${error.message}`);
+            }
+        }
+        
+        async function testLoginAPI() {
+            showStatus('basic-status', '测试登录API...', 'info');
+            log('开始测试登录API');
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_info: { username: 'user1', password: 'ph6n76gec9' }
+                    })
+                });
+                
+                const data = await response.json();
+                log(`登录响应: ${JSON.stringify(data)}`);
+                
+                if (data.success) {
+                    currentUser = data.userID;
+                    currentSession = data.sessionID;
+                    showStatus('basic-status', 
+                        `✅ 登录API成功<br>用户ID: ${data.userID}<br>会话ID: ${data.sessionID}`, 
+                        'success'
+                    );
+                } else {
+                    showStatus('basic-status', `❌ 登录API失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('basic-status', `❌ 登录API异常: ${error.message}`, 'error');
+                log(`登录API异常: ${error.message}`);
+            }
+        }
+        
+        async function testChatAPI() {
+            showStatus('chat-status', '测试聊天API...', 'info');
+            log('开始测试聊天API');
+            
+            if (!currentUser || !currentSession) {
+                showStatus('chat-status', '❌ 请先登录', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/update_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        choice_info: {
+                            user_id: currentUser,
+                            session_id: currentSession,
+                            user_choice: '我感觉很好',
+                            input_type: ['open_text']
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                log(`聊天响应: ${JSON.stringify(data)}`);
+                
+                if (data.chatbot_response) {
+                    showStatus('chat-status', 
+                        `✅ 聊天API成功<br>回复: ${data.chatbot_response}<br>选项: ${JSON.stringify(data.user_options)}`, 
+                        'success'
+                    );
+                } else {
+                    showStatus('chat-status', `❌ 聊天API失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('chat-status', `❌ 聊天API异常: ${error.message}`, 'error');
+                log(`聊天API异常: ${error.message}`);
+            }
+        }
+        
+        async function testMultipleRequests() {
+            showStatus('chat-status', '测试连续请求...', 'info');
+            log('开始测试连续请求');
+            
+            if (!currentUser || !currentSession) {
+                showStatus('chat-status', '❌ 请先登录', 'error');
+                return;
+            }
+            
+            const testMessages = [
+                '我感觉很好',
+                'Continue',
+                'Happy',
+                '我想聊聊工作'
+            ];
+            
+            for (let i = 0; i < testMessages.length; i++) {
+                const message = testMessages[i];
+                log(`发送消息 ${i+1}: ${message}`);
+                
+                try {
+                    const response = await fetch('http://localhost:5001/api/update_session', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            choice_info: {
+                                user_id: currentUser,
+                                session_id: currentSession,
+                                user_choice: message,
+                                input_type: ['open_text']
+                            }
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    log(`响应 ${i+1}: ${JSON.stringify(data)}`);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } catch (error) {
+                    log(`消息 ${i+1} 发送失败: ${error.message}`);
+                }
+            }
+            
+            showStatus('chat-status', '✅ 连续请求测试完成', 'success');
+        }
+        
+        async function simulateFrontendRequest() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (!message) {
+                log('请输入消息');
+                return;
+            }
+            
+            if (!currentUser || !currentSession) {
+                log('请先登录');
+                return;
+            }
+            
+            log(`模拟前端请求: ${message}`);
+            
+            try {
+                // 模拟前端ActionProvider的sendRequest方法
+                const requestData = {
+                    choice_info: {
+                        user_id: currentUser,
+                        session_id: currentSession,
+                        user_choice: message,
+                        input_type: ['open_text']
+                    }
+                };
+                
+                log(`请求数据: ${JSON.stringify(requestData)}`);
+                
+                const response = await fetch('http://localhost:5001/api/update_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                log(`响应数据: ${JSON.stringify(data)}`);
+                
+                if (data.chatbot_response) {
+                    document.getElementById('frontend-response').innerHTML = 
+                        `<div class="status success">
+                            <strong>机器人回复:</strong> ${data.chatbot_response}<br>
+                            <strong>选项:</strong> ${JSON.stringify(data.user_options)}
+                        </div>`;
+                    log('前端请求模拟成功');
+                } else {
+                    document.getElementById('frontend-response').innerHTML = 
+                        `<div class="status error">
+                            <strong>错误:</strong> ${data.error || '未知错误'}
+                        </div>`;
+                    log(`前端请求模拟失败: ${data.error || '未知错误'}`);
+                }
+            } catch (error) {
+                document.getElementById('frontend-response').innerHTML = 
+                    `<div class="status error">
+                        <strong>异常:</strong> ${error.message}
+                    </div>`;
+                log(`前端请求模拟异常: ${error.message}`);
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+            log('日志已清除');
+        }
+        
+        // 页面加载时的初始化
+        window.onload = function() {
+            log('页面加载完成，网络请求测试工具已就绪');
+            log('建议测试步骤：');
+            log('1. 测试基础连接');
+            log('2. 测试登录API');
+            log('3. 测试聊天API');
+            log('4. 模拟前端请求');
+        };
+    </script>
+</body>
+</html>

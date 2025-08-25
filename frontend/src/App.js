@@ -6,14 +6,19 @@ import MessageParser from "./MessageParser";
 import ActionProvider from "./ActionProvider";
 import config from "./config";
 import Login from "./Login";
+import TestChat from "./TestChat";
+import MinimalChatTest from "./MinimalChatTest";
 
 const App = () => {
   const [showTools, setShowTools] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
   const [chatConfig, setChatConfig] = useState(config);
+  const [testMode, setTestMode] = useState(false);
+  const [minimalTestMode, setMinimalTestMode] = useState(false);
 
   const handleLogin = (userData) => {
+    console.log('App.js handleLogin called with:', userData);
     setUserInfo(userData);
     setIsLoggedIn(true);
     
@@ -53,9 +58,22 @@ const App = () => {
         sessionID: userData.sessionID,
         username: userData.username,
         // Store the initial choices from backend
-        initialChoices: userData.choices || []
+        initialChoices: userData.choices || [],
+        // Store inputType from backend for proper message processing
+        inputType: userData.choices || [],
+        currentOptionToShow: userData.choices && userData.choices.length > 0 ? "InitialOptions" : null,
+        messages: []
       }
     };
+    
+    console.log('App.js updating chat config with user data:', {
+      userState: userData.userID,
+      sessionID: userData.sessionID,
+      username: userData.username,
+      initialChoices: userData.choices,
+      inputType: userData.choices,
+      currentOptionToShow: userData.choices && userData.choices.length > 0 ? "InitialOptions" : null
+    });
     
     setChatConfig(updatedConfig);
   };
@@ -97,8 +115,43 @@ const App = () => {
     setChatConfig(config); // Reset to original config
   };
 
+  // 添加测试模式切换
+  const toggleTestMode = () => {
+    setTestMode(!testMode);
+    setMinimalTestMode(false);
+    console.log('Test mode toggled:', !testMode);
+  };
+
+  // 添加最小化测试模式切换
+  const toggleMinimalTestMode = () => {
+    setMinimalTestMode(!minimalTestMode);
+    setTestMode(false);
+    console.log('Minimal test mode toggled:', !minimalTestMode);
+  };
+
   if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} onRegister={handleRegister} />;
+    return (
+      <div className="App">
+        <div className="app-header">
+          <h1>MindGuide Therapy Assistant</h1>
+          <div className="header-controls">
+            <button 
+              className="tools-toggle"
+              onClick={toggleTestMode}
+            >
+              {testMode ? '退出测试' : '测试模式'}
+            </button>
+            <button 
+              className="tools-toggle"
+              onClick={toggleMinimalTestMode}
+            >
+              {minimalTestMode ? '退出最小测试' : '最小测试'}
+            </button>
+          </div>
+        </div>
+        {testMode ? <TestChat /> : minimalTestMode ? <MinimalChatTest /> : <Login onLogin={handleLogin} onRegister={handleRegister} />}
+      </div>
+    );
   }
 
   return (
@@ -112,6 +165,18 @@ const App = () => {
             onClick={() => setShowTools(!showTools)}
           >
             {showTools ? '隐藏工具' : '显示工具'}
+          </button>
+          <button 
+            className="tools-toggle"
+            onClick={toggleTestMode}
+          >
+            {testMode ? '正常模式' : '测试模式'}
+          </button>
+          <button 
+            className="tools-toggle"
+            onClick={toggleMinimalTestMode}
+          >
+            {minimalTestMode ? '正常模式' : '最小测试'}
           </button>
           <button 
             className="logout-btn"
@@ -142,11 +207,17 @@ const App = () => {
         )}
         
         <div className={`chat-container ${showTools ? 'with-tools' : ''}`}>
-          <Chatbot
-            config={chatConfig}
-            messageParser={MessageParser}
-            actionProvider={ActionProvider}
-          />
+          {testMode ? (
+            <TestChat />
+          ) : minimalTestMode ? (
+            <MinimalChatTest />
+          ) : (
+            <Chatbot
+              config={chatConfig}
+              messageParser={MessageParser}
+              actionProvider={ActionProvider}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -33,7 +33,10 @@ const config = {
     sessionID: null,
     protocols: [],
     askingForProtocol: false,
-    initialChoices: []
+    initialChoices: [],
+    inputType: null,
+    currentOptionToShow: null,
+    messages: []
   },
 
   customComponents: {
@@ -81,7 +84,7 @@ const config = {
     {
       widgetName: "InitialOptions",
       widgetFunc: (props) => <InitialOptions {...props} />,
-      mapStateToProps: ["userState", "sessionID", "initialChoices"],
+      mapStateToProps: ["userState", "sessionID", "initialChoices", "inputType"],
     },
   ],
 };

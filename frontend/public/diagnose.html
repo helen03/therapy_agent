@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天问题诊断</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .diagnostic-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .problem-indicator {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .problem {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .no-problem {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .unknown {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .chat-test {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="diagnostic-container">
+        <h1>🔍 聊天问题深度诊断</h1>
+        
+        <div class="section">
+            <h2>1. 基础连接测试</h2>
+            <button onclick="testBackendConnection()">测试后端连接</button>
+            <button onclick="testFrontendConnection()">测试前端连接</button>
+            <button onclick="testCORS()">测试CORS</button>
+            <div id="connection-status"></div>
+        </div>
+        
+        <div class="section">
+            <h2>2. 登录功能测试</h2>
+            <button onclick="testLogin()">测试登录</button>
+            <button onclick="testLoginWithWrongCredentials()">测试错误登录</button>
+            <div id="login-status"></div>
+        </div>
+        
+        <div class="section">
+            <h2>3. 聊天功能测试</h2>
+            <div class="chat-test">
+                <h3>聊天模拟器</h3>
+                <input type="text" id="chat-input" placeholder="输入消息..." value="我感觉很好">
+                <button onclick="sendChatMessage()">发送消息</button>
+                <button onclick="testMultipleMessages()">批量测试</button>
+                <div id="chat-response"></div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>4. 问题诊断</h2>
+            <button onclick="diagnoseProblem()">开始诊断</button>
+            <button onclick="checkJavaScriptErrors()">检查JavaScript错误</button>
+            <button onclick="checkReactState()">检查React状态</button>
+            <div id="problem-diagnosis"></div>
+        </div>
+        
+        <div class="section">
+            <h2>5. 详细日志</h2>
+            <div id="log"></div>
+            <button onclick="clearLog()">清除日志</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentSession = null;
+        let diagnosticResults = {};
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logDiv.textContent += logEntry + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(logEntry);
+        }
+        
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'problem' ? 'problem-indicator problem' : 
+                             type === 'no-problem' ? 'problem-indicator no-problem' : 
+                             'problem-indicator unknown';
+            element.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+        
+        async function testBackendConnection() {
+            log('测试后端连接...');
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3000'
+                    },
+                    body: JSON.stringify({ 
+                        user_info: { username: 'user1', password: 'ph6n76gec9' } 
+                    })
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    showStatus('connection-status', '✅ 后端连接正常', 'no-problem');
+                    log('后端连接测试成功');
+                    log('响应数据:', JSON.stringify(data));
+                } else {
+                    showStatus('connection-status', `❌ 后端连接失败: ${response.status}`, 'problem');
+                    log(`后端连接失败: ${response.status}`);
+                    log('错误信息:', data.error || '未知错误');
+                }
+            } catch (error) {
+                showStatus('connection-status', `❌ 后端连接异常: ${error.message}`, 'problem');
+                log(`后端连接异常: ${error.message}`);
+            }
+        }
+        
+        async function testFrontendConnection() {
+            log('测试前端连接...');
+            try {
+                const response = await fetch('http://localhost:3000');
+                if (response.ok) {
+                    showStatus('connection-status', '✅ 前端连接正常', 'no-problem');
+                    log('前端连接测试成功');
+                } else {
+                    showStatus('connection-status', `❌ 前端连接失败: ${response.status}`, 'problem');
+                    log(`前端连接失败: ${response.status}`);
+                }
+            } catch (error) {
+                showStatus('connection-status', `❌ 前端连接异常: ${error.message}`, 'problem');
+                log(`前端连接异常: ${error.message}`);
+            }
+        }
+        
+        async function testCORS() {
+            log('测试CORS...');
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'OPTIONS',
+                    headers: { 
+                        'Origin': 'http://localhost:3000',
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                const corsHeaders = response.headers.get('Access-Control-Allow-Origin');
+                if (corsHeaders) {
+                    showStatus('connection-status', '✅ CORS配置正常', 'no-problem');
+                    log('CORS测试成功');
+                } else {
+                    showStatus('connection-status', '❌ CORS配置有问题', 'problem');
+                    log('CORS测试失败');
+                }
+            } catch (error) {
+                showStatus('connection-status', `❌ CORS测试异常: ${error.message}`, 'problem');
+                log(`CORS测试异常: ${error.message}`);
+            }
+        }
+        
+        async function testLogin() {
+            log('测试登录功能...');
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_info: { username: 'user1', password: 'ph6n76gec9' }
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = data.userID;
+                    currentSession = data.sessionID;
+                    showStatus('login-status', 
+                        `✅ 登录成功<br>用户ID: ${data.userID}<br>会话ID: ${data.sessionID}`, 
+                        'no-problem'
+                    );
+                    log('登录测试成功');
+                } else {
+                    showStatus('login-status', `❌ 登录失败: ${data.error}`, 'problem');
+                    log(`登录测试失败: ${data.error}`);
+                }
+            } catch (error) {
+                showStatus('login-status', `❌ 登录异常: ${error.message}`, 'problem');
+                log(`登录异常: ${error.message}`);
+            }
+        }
+        
+        async function testLoginWithWrongCredentials() {
+            log('测试错误登录...');
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_info: { username: 'wrong', password: 'wrong' }
+                    })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    showStatus('login-status', '✅ 错误登录被正确拒绝', 'no-problem');
+                    log('错误登录测试成功 - 被正确拒绝');
+                } else {
+                    showStatus('login-status', '❌ 错误登录被错误接受', 'problem');
+                    log('错误登录测试失败 - 被错误接受');
+                }
+            } catch (error) {
+                showStatus('login-status', `❌ 错误登录测试异常: ${error.message}`, 'problem');
+                log(`错误登录测试异常: ${error.message}`);
+            }
+        }
+        
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) {
+                log('请输入消息');
+                return;
+            }
+            
+            if (!currentUser || !currentSession) {
+                log('请先登录');
+                return;
+            }
+            
+            log(`发送消息: ${message}`);
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/update_session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        choice_info: {
+                            user_id: currentUser,
+                            session_id: currentSession,
+                            user_choice: message
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                log(`收到响应: ${JSON.stringify(data)}`);
+                
+                if (data.chatbot_response) {
+                    document.getElementById('chat-response').innerHTML = 
+                        `<div style="background: #e8f5e8; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                            <strong>机器人回复:</strong> ${data.chatbot_response}
+                        </div>`;
+                    log('聊天消息发送成功');
+                } else {
+                    document.getElementById('chat-response').innerHTML = 
+                        `<div style="background: #ffe8e8; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                            <strong>错误:</strong> ${data.error || '未知错误'}
+                        </div>`;
+                    log(`聊天消息发送失败: ${data.error || '未知错误'}`);
+                }
+            } catch (error) {
+                document.getElementById('chat-response').innerHTML = 
+                    `<div style="background: #ffe8e8; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                        <strong>异常:</strong> ${error.message}
+                    </div>`;
+                log(`聊天消息发送异常: ${error.message}`);
+            }
+        }
+        
+        async function testMultipleMessages() {
+            const messages = ['我感觉很好', 'Continue', 'Happy', '我想聊聊工作'];
+            
+            for (let i = 0; i < messages.length; i++) {
+                document.getElementById('chat-input').value = messages[i];
+                await sendChatMessage();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        async function diagnoseProblem() {
+            log('开始问题诊断...');
+            document.getElementById('problem-diagnosis').innerHTML = '<div>诊断中...</div>';
+            
+            const problems = [];
+            
+            // 1. 检查后端连接
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ test: 'connection' })
+                });
+                if (!response.ok) {
+                    problems.push('后端连接失败');
+                }
+            } catch (error) {
+                problems.push('后端连接异常: ' + error.message);
+            }
+            
+            // 2. 检查登录功能
+            try {
+                const loginResponse = await fetch('http://localhost:5001/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_info: { username: 'user1', password: 'ph6n76gec9' }
+                    })
+                });
+                const loginData = await loginResponse.json();
+                if (!loginData.success) {
+                    problems.push('登录功能失败');
+                }
+            } catch (error) {
+                problems.push('登录功能异常: ' + error.message);
+            }
+            
+            // 3. 检查聊天功能
+            try {
+                if (currentUser && currentSession) {
+                    const chatResponse = await fetch('http://localhost:5001/api/update_session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            choice_info: {
+                                user_id: currentUser,
+                                session_id: currentSession,
+                                user_choice: 'test'
+                            }
+                        })
+                    });
+                    const chatData = await chatResponse.json();
+                    if (!chatData.chatbot_response) {
+                        problems.push('聊天功能无响应');
+                    }
+                } else {
+                    problems.push('用户未登录，无法测试聊天功能');
+                }
+            } catch (error) {
+                problems.push('聊天功能异常: ' + error.message);
+            }
+            
+            // 4. 显示诊断结果
+            if (problems.length === 0) {
+                document.getElementById('problem-diagnosis').innerHTML = 
+                    '<div class="problem-indicator no-problem">✅ 未发现明显问题，可能需要检查前端JavaScript代码</div>';
+                log('诊断完成：未发现明显问题');
+            } else {
+                const problemList = problems.map(p => `• ${p}`).join('<br>');
+                document.getElementById('problem-diagnosis').innerHTML = 
+                    `<div class="problem-indicator problem">❌ 发现以下问题：<br>${problemList}</div>`;
+                log(`诊断完成：发现问题 - ${problems.join(', ')}`);
+            }
+        }
+        
+        function checkJavaScriptErrors() {
+            log('检查JavaScript错误...');
+            
+            // 检查全局错误
+            window.onerror = function(message, source, lineno, colno, error) {
+                log(`JavaScript错误: ${message} at ${source}:${lineno}:${colno}`);
+                return true;
+            };
+            
+            // 检查未处理的Promise拒绝
+            window.onunhandledrejection = function(event) {
+                log(`Promise拒绝: ${event.reason}`);
+            };
+            
+            // 检查React开发者工具
+            if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+                log('React开发者工具已安装');
+            } else {
+                log('React开发者工具未安装');
+            }
+            
+            // 检查console错误
+            const originalError = console.error;
+            console.error = function(...args) {
+                log(`Console错误: ${args.join(' ')}`);
+                originalError.apply(console, args);
+            };
+            
+            document.getElementById('problem-diagnosis').innerHTML = 
+                '<div class="problem-indicator unknown">⚠️ JavaScript错误检查已启用，请查看控制台</div>';
+        }
+        
+        function checkReactState() {
+            log('检查React状态...');
+            
+            // 尝试访问React组件
+            if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+                const reactRoot = document.querySelector('#root');
+                if (reactRoot) {
+                    log('React根元素找到');
+                    // 尝试获取React组件实例
+                    try {
+                        const fiberKey = Object.keys(reactRoot).find(key => key.startsWith('__reactInternalInstance'));
+                        if (fiberKey) {
+                            log('React Fiber实例找到');
+                        } else {
+                            log('React Fiber实例未找到');
+                        }
+                    } catch (error) {
+                        log(`React状态检查失败: ${error.message}`);
+                    }
+                } else {
+                    log('React根元素未找到');
+                }
+            } else {
+                log('React开发者工具未找到，无法检查状态');
+            }
+            
+            document.getElementById('problem-diagnosis').innerHTML = 
+                '<div class="problem-indicator unknown">⚠️ React状态检查完成，请查看日志</div>';
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+            log('日志已清除');
+        }
+        
+        // 页面加载时自动开始诊断
+        window.onload = function() {
+            log('页面加载完成，诊断工具已就绪');
+            log('建议按顺序进行测试：');
+            log('1. 测试基础连接');
+            log('2. 测试登录功能');
+            log('3. 测试聊天功能');
+            log('4. 开始问题诊断');
+        };
+    </script>
+</body>
+</html>

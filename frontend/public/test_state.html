@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>状态管理测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        #log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 状态管理测试</h1>
+        
+        <div class="test-section">
+            <h2>1. 模拟前端状态管理</h2>
+            <button onclick="simulateLogin()">模拟登录</button>
+            <button onclick="simulateMessageParse()">模拟消息解析</button>
+            <button onclick="checkState()">检查状态</button>
+            <div id="state-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. 测试消息处理流程</h2>
+            <button onclick="testMessageProcessing()">测试消息处理</button>
+            <button onclick="testInvalidInput()">测试无效输入</button>
+            <div id="message-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. 调试日志</h2>
+            <div id="log"></div>
+            <button onclick="clearLog()">清除日志</button>
+        </div>
+    </div>
+
+    <script>
+        // 模拟前端状态
+        let mockState = {
+            userState: null,
+            sessionID: null,
+            username: null,
+            inputType: null,
+            currentOptionToShow: null,
+            protocols: [],
+            askingForProtocol: false,
+            initialChoices: []
+        };
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logDiv.textContent += logEntry + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(logEntry);
+        }
+        
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function simulateLogin() {
+            showStatus('state-status', '正在模拟登录...', 'info');
+            log('开始模拟登录');
+            
+            // 模拟登录响应
+            mockState = {
+                userState: 1,
+                sessionID: 'session_1_8842',
+                username: 'user1',
+                inputType: ['我感觉很好', '我感觉不太好', '我感觉一般'],
+                currentOptionToShow: null,
+                protocols: [],
+                askingForProtocol: false,
+                initialChoices: ['我感觉很好', '我感觉不太好', '我感觉一般']
+            };
+            
+            log('登录成功，状态已更新');
+            log('用户状态: ' + JSON.stringify(mockState, null, 2));
+            
+            showStatus('state-status', 
+                `✅ 模拟登录成功！<br>用户ID: ${mockState.userState}<br>会话ID: ${mockState.sessionID}<br>输入类型: ${JSON.stringify(mockState.inputType)}`, 
+                'success'
+            );
+        }
+        
+        function simulateMessageParse() {
+            showStatus('state-status', '正在模拟消息解析...', 'info');
+            log('开始模拟消息解析');
+            
+            if (!mockState.userState || !mockState.sessionID) {
+                showStatus('state-status', '❌ 用户未登录，请先模拟登录', 'error');
+                log('用户未登录，无法解析消息');
+                return;
+            }
+            
+            // 模拟MessageParser的逻辑
+            const testMessage = "我感觉很好";
+            log(`测试消息: "${testMessage}"`);
+            log(`当前状态: userState=${mockState.userState}, sessionID=${mockState.sessionID}`);
+            log(`输入类型: ${JSON.stringify(mockState.inputType)}`);
+            log(`当前选项: ${mockState.currentOptionToShow}`);
+            
+            // 检查输入验证逻辑
+            const isValidInput = !mockState.currentOptionToShow || (
+                (mockState.currentOptionToShow === "Continue" && testMessage === "Continue") ||
+                (mockState.currentOptionToShow === "Emotion" && (testMessage === "Happy" || testMessage === "Sad" || testMessage === "Angry" || testMessage === "Neutral")) ||
+                (mockState.currentOptionToShow === "RecentDistant" && (testMessage === "Recent" || testMessage === "Distant")) ||
+                (mockState.currentOptionToShow === "Feedback" && (testMessage === "Better" || testMessage === "Worse" || testMessage === "No change")) ||
+                (mockState.currentOptionToShow === "Protocol" && mockState.protocols.includes(testMessage)) ||
+                (mockState.currentOptionToShow === "YesNo" && (testMessage === "Yes" || testMessage === "No"))
+            );
+            
+            log(`输入验证结果: ${isValidInput}`);
+            
+            if (isValidInput) {
+                const choice_info = {
+                    user_id: mockState.userState,
+                    session_id: mockState.sessionID,
+                    user_choice: testMessage,
+                    input_type: mockState.inputType,
+                };
+                log(`生成的choice_info: ${JSON.stringify(choice_info)}`);
+                showStatus('state-status', '✅ 消息解析成功！', 'success');
+            } else {
+                log('输入验证失败');
+                showStatus('state-status', '❌ 输入验证失败', 'error');
+            }
+        }
+        
+        function checkState() {
+            showStatus('state-status', '正在检查状态...', 'info');
+            log('检查当前状态');
+            
+            const stateCheck = {
+                userState: mockState.userState,
+                sessionID: mockState.sessionID,
+                username: mockState.username,
+                inputType: mockState.inputType,
+                currentOptionToShow: mockState.currentOptionToShow,
+                isLoggedIn: mockState.userState !== null && mockState.sessionID !== null
+            };
+            
+            log('状态检查结果: ' + JSON.stringify(stateCheck, null, 2));
+            
+            if (stateCheck.isLoggedIn) {
+                showStatus('state-status', 
+                    `✅ 用户已登录<br>用户ID: ${stateCheck.userState}<br>会话ID: ${stateCheck.sessionID}<br>输入类型: ${JSON.stringify(stateCheck.inputType)}`, 
+                    'success'
+                );
+            } else {
+                showStatus('state-status', '❌ 用户未登录', 'error');
+            }
+        }
+        
+        function testMessageProcessing() {
+            showStatus('message-status', '正在测试消息处理...', 'info');
+            log('开始测试消息处理流程');
+            
+            const testMessages = [
+                "我感觉很好",
+                "Continue",
+                "Happy",
+                "Yes",
+                "No",
+                "Recent",
+                "Distant",
+                "Better",
+                "Worse",
+                "No change"
+            ];
+            
+            testMessages.forEach((message, index) => {
+                log(`测试消息 ${index + 1}: "${message}"`);
+                
+                // 模拟不同的状态场景
+                if (message === "Happy" || message === "Sad" || message === "Angry" || message === "Neutral") {
+                    mockState.currentOptionToShow = "Emotion";
+                } else if (message === "Continue") {
+                    mockState.currentOptionToShow = "Continue";
+                } else if (message === "Yes" || message === "No") {
+                    mockState.currentOptionToShow = "YesNo";
+                } else if (message === "Recent" || message === "Distant") {
+                    mockState.currentOptionToShow = "RecentDistant";
+                } else if (message === "Better" || message === "Worse" || message === "No change") {
+                    mockState.currentOptionToShow = "Feedback";
+                } else {
+                    mockState.currentOptionToShow = null;
+                }
+                
+                const isValidInput = !mockState.currentOptionToShow || (
+                    (mockState.currentOptionToShow === "Continue" && message === "Continue") ||
+                    (mockState.currentOptionToShow === "Emotion" && (message === "Happy" || message === "Sad" || message === "Angry" || message === "Neutral")) ||
+                    (mockState.currentOptionToShow === "RecentDistant" && (message === "Recent" || message === "Distant")) ||
+                    (mockState.currentOptionToShow === "Feedback" && (message === "Better" || message === "Worse" || message === "No change")) ||
+                    (mockState.currentOptionToShow === "Protocol" && mockState.protocols.includes(message)) ||
+                    (mockState.currentOptionToShow === "YesNo" && (message === "Yes" || message === "No"))
+                );
+                
+                log(`   期望选项: ${mockState.currentOptionToShow}, 验证结果: ${isValidInput}`);
+            });
+            
+            showStatus('message-status', '✅ 消息处理测试完成！', 'success');
+        }
+        
+        function testInvalidInput() {
+            showStatus('message-status', '正在测试无效输入...', 'info');
+            log('开始测试无效输入处理');
+            
+            // 设置一个期望的选项类型
+            mockState.currentOptionToShow = "Emotion";
+            
+            const invalidMessages = [
+                "这是一个无效的输入",
+                "12345",
+                "随便说说",
+                "我不知道"
+            ];
+            
+            invalidMessages.forEach((message, index) => {
+                log(`测试无效输入 ${index + 1}: "${message}"`);
+                
+                const isValidInput = !mockState.currentOptionToShow || (
+                    (mockState.currentOptionToShow === "Continue" && message === "Continue") ||
+                    (mockState.currentOptionToShow === "Emotion" && (message === "Happy" || message === "Sad" || message === "Angry" || message === "Neutral")) ||
+                    (mockState.currentOptionToShow === "RecentDistant" && (message === "Recent" || message === "Distant")) ||
+                    (mockState.currentOptionToShow === "Feedback" && (message === "Better" || message === "Worse" || message === "No change")) ||
+                    (mockState.currentOptionToShow === "Protocol" && mockState.protocols.includes(message)) ||
+                    (mockState.currentOptionToShow === "YesNo" && (message === "Yes" || message === "No"))
+                );
+                
+                log(`   期望选项: ${mockState.currentOptionToShow}, 验证结果: ${isValidInput}`);
+                
+                if (!isValidInput) {
+                    log(`   ✓ 正确识别为无效输入`);
+                } else {
+                    log(`   ✗ 错误地识别为有效输入`);
+                }
+            });
+            
+            showStatus('message-status', '✅ 无效输入测试完成！', 'success');
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+            log('日志已清除');
+        }
+        
+        // 页面加载时的初始化
+        window.onload = function() {
+            log('页面加载完成，状态管理测试工具已就绪');
+            showStatus('state-status', '页面已加载，点击按钮开始测试', 'info');
+        };
+    </script>
+</body>
+</html>

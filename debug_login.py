@@ -28,12 +28,18 @@ def debug_user_and_password(username, password):
             print(f"哈希编码后: '{user.password_hash.encode('utf-8')}'")
             
             # 使用bcrypt直接验证
-            is_valid = bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8'))
-            print(f"bcrypt直接验证结果: {is_valid}")
+            try:
+                is_valid = bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8'))
+                print(f"bcrypt直接验证结果: {is_valid}")
+            except Exception as e:
+                print(f"bcrypt直接验证出错: {e}")
             
             # 使用User模型的check_password方法
-            is_valid_model = user.check_password(password)
-            print(f"User模型check_password方法验证结果: {is_valid_model}")
+            try:
+                is_valid_model = user.check_password(password)
+                print(f"User模型check_password方法验证结果: {is_valid_model}")
+            except Exception as e:
+                print(f"User模型check_password方法验证出错: {e}")
             
             return user
         else:
@@ -43,7 +49,7 @@ def debug_user_and_password(username, password):
 # 3. 测试API调用
 def test_api_login(username, password):
     print("\n===== API登录测试 ====")
-    login_url = 'http://localhost:5002/api/login'
+    login_url = 'http://localhost:5000/api/login'
     credentials = {
         'user_info': {
             'username': username,
@@ -73,12 +79,15 @@ def test_api_login(username, password):
     except requests.exceptions.RequestException as e:
         print(f"请求异常: {e}")
 
-if __name__ == '__main__':
-    # 调试用户 'user00'
-    username = 'user00'
-    password = 'password'
+def main():
+    print("MindGuide 密码调试工具")
+    print("=" * 50)
     
-    print(f"开始调试用户 '{username}'")
+    # 获取用户输入
+    username = input("请输入用户名 (默认: user00): ") or "user00"
+    password = input("请输入密码 (默认: password): ") or "password"
+    
+    print(f"\n开始调试用户 '{username}'")
     user = debug_user_and_password(username, password)
     
     if user:
@@ -86,3 +95,21 @@ if __name__ == '__main__':
         test_api_login(username, password)
     else:
         print("用户不存在，无法测试API登录")
+        
+        # 询问是否创建用户
+        create = input("\n是否创建该用户? (y/N): ")
+        if create.lower() == 'y':
+            app = create_app()
+            with app.app_context():
+                new_user = User(username=username)
+                new_user.set_password(password)
+                db.session.add(new_user)
+                try:
+                    db.session.commit()
+                    print(f"用户创建成功。用户ID: {new_user.id}")
+                except Exception as e:
+                    db.session.rollback()
+                    print(f"用户创建失败: {e}")
+
+if __name__ == '__main__':
+    main()

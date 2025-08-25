@@ -53,7 +53,14 @@ def create_app():
     db.init_app(app)  # <- This will get called in our models.py file
     migrate.init_app(app, db)  # <- Migration directory
 
-    CORS(app, resources={r"/*": {"origins": "*"}})
+    CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "supports_credentials": True
+    }
+})
 
     from backend.database import models  # noqa
     from backend.database.models import User, UserModelSession  # noqa
@@ -115,27 +122,24 @@ def create_app():
     def login():
         """User login with JWT authentication"""
         try:
-            print("===== LOGIN API CALLED =====")
-            print(f"请求数据: {request.data}")
+            app.logger.info("LOGIN API CALLED")
+            app.logger.debug(f"Request data: {request.data}")
             
             user_info = json.loads(request.data)["user_info"]
             username = user_info["username"]
             password = user_info["password"]
             
-            print(f"用户名: {username}")
-            print(f"密码长度: {len(password)}")
+            app.logger.info(f"Username: {username}")
             
             # Find user by username
             user = User.query.filter_by(username=username).first()
             
             if user:
-                print(f"找到用户: {user.username} (ID: {user.id})")
-                print(f"数据库中的密码哈希: {user.password_hash}")
-                print(f"密码哈希长度: {len(user.password_hash)}")
+                app.logger.info(f"Found user: {user.username} (ID: {user.id})")
                 
-                # 直接测试密码验证
+                # Test password validation
                 password_valid = user.check_password(password)
-                print(f"密码验证结果: {password_valid}")
+                app.logger.info(f"Password validation result: {password_valid}")
                 
                 if password_valid:
                     # Create a new session for the user
@@ -164,7 +168,7 @@ def create_app():
                         }
                     except Exception as e:
                         # Fallback if decision maker fails (e.g., LLM API issues)
-                        logger.warning(f"Decision maker failed: {e}")
+                        app.logger.warning(f"Decision maker failed: {e}")
                         
                         # Provide a basic response that doesn't rely on LLM
                         return {
@@ -177,13 +181,13 @@ def create_app():
                             "choices": ["我很好，谢谢", "我有点难过", "我感到焦虑", "我想聊聊心事"]
                         }
                 else:
-                    print(f"密码验证失败: 用户名 '{username}' 的密码不正确")
+                    app.logger.warning(f"Password validation failed for username '{username}'")
                     return {"success": False, "validID": False, "error": "Invalid username or password"}, 401
             else:
-                print(f"用户不存在: 未找到用户名 '{username}'")
+                app.logger.warning(f"User not found: username '{username}'")
                 return {"success": False, "validID": False, "error": "Invalid username or password"}, 401
         except Exception as e:
-            print(f"登录请求异常: {e}")
+            app.logger.error(f"Login request error: {e}")
             return {"success": False, "validID": False, "error": str(e)}, 500
 
     # Add new API endpoints for enhanced features
@@ -281,57 +285,113 @@ def create_app():
         try:
             from backend.services.llm_therapy_service import therapy_service
             
-            choice_info = json.loads(request.data)["choice_info"]
-            user_id = choice_info["user_id"]
-            session_id = choice_info["session_id"]
-            input_type = choice_info["input_type"]
-            user_choice = choice_info["user_choice"]
+            # Parse request data with better error handling
+            try:
+                request_data = json.loads(request.data)
+                if not isinstance(request_data, dict):
+                    raise ValueError("Request data must be a dictionary")
+                
+                choice_info = request_data.get("choice_info")
+                if not choice_info or not isinstance(choice_info, dict):
+                    raise ValueError("choice_info must be a dictionary")
+                    
+            except (json.JSONDecodeError, ValueError, KeyError) as e:
+                app.logger.error(f"Invalid request data format: {e}")
+                return {"success": False, "error": "Invalid request data format"}, 400
+                
+            user_id = choice_info.get("user_id")
+            session_id = choice_info.get("session_id")
+            input_type = choice_info.get("input_type", "any")
+            user_choice = choice_info.get("user_choice", "")
+            
+            # Validate required parameters
+            if not user_id:
+                app.logger.error("Missing user_id parameter")
+                return {"success": False, "error": "Missing user_id"}, 400
+            if not session_id:
+                app.logger.error("Missing session_id parameter")
+                return {"success": False, "error": "Missing session_id"}, 400
+            if not user_choice or not user_choice.strip():
+                app.logger.error("Missing or empty user_choice parameter")
+                return {"success": False, "error": "Missing or empty user_choice"}, 400
 
             # Handle input type formatting
-            if type(input_type) == list and len(input_type) == 0:
+            if isinstance(input_type, list) and len(input_type) == 0:
                 input_type = "any"
-            elif type(input_type) == list and len(input_type) == 1:
+            elif isinstance(input_type, list) and len(input_type) == 1:
                 input_type = input_type[0]
 
+            # Validate user and session
             user = User.query.filter_by(id=user_id).first()
+            if not user:
+                app.logger.error(f"User not found: {user_id}")
+                return {"success": False, "error": "User not found"}, 404
+                
             user_session = UserModelSession.query.filter_by(id=session_id).first()
+            if not user_session:
+                app.logger.error(f"Session not found: {session_id}")
+                return {"success": False, "error": "Session not found"}, 404
 
-            # Store conversation in memory system
-            conversation_text = f"User message: {user_choice}, Input type: {input_type}"
-            therapeutic_context = {
-                "session_id": session_id,
-                "input_type": input_type,
-                "message_type": "user_input"
-            }
-            
-            memory_manager.store_conversation(
-                user_id=str(user_id), 
-                user_name=user.username if user else "unknown",
-                conversation_text=conversation_text,
-                session_id=str(session_id),
-                therapeutic_context=therapeutic_context
-            )
+            # Store conversation in memory system with error handling
+            try:
+                conversation_text = f"User message: {user_choice}, Input type: {input_type}"
+                therapeutic_context = {
+                    "session_id": session_id,
+                    "input_type": input_type,
+                    "message_type": "user_input"
+                }
+                
+                memory_manager.store_conversation(
+                    user_id=str(user_id), 
+                    user_name=user.username,
+                    conversation_text=conversation_text,
+                    session_id=str(session_id),
+                    therapeutic_context=therapeutic_context
+                )
+            except Exception as e:
+                app.logger.warning(f"Failed to store conversation in memory: {e}")
+                # Continue even if memory storage fails
 
             # Process user message using LLM therapy service
-            response_data = therapy_service.process_message(
-                user_id, session_id, user_choice, input_type
-            )
+            try:
+                response_data = therapy_service.process_message(
+                    user_id, session_id, user_choice, input_type
+                )
+                
+                # Validate response data
+                if not isinstance(response_data, dict):
+                    raise ValueError("Invalid response format from therapy service")
+                    
+            except Exception as e:
+                app.logger.error(f"Therapy service processing failed: {e}")
+                # Use fallback response
+                response_data = {
+                    "response": "我在这里为您提供支持。请告诉我更多关于您的感受。",
+                    "options": ["继续对话", "换个话题", "需要帮助"],
+                    "emotion": "neutral",
+                    "requires_followup": False
+                }
             
             # Update last accessed time
-            if user:
+            try:
                 user.last_accessed = datetime.datetime.utcnow()
                 db.session.commit()
+            except Exception as e:
+                app.logger.warning(f"Failed to update user last accessed time: {e}")
+                # Continue even if update fails
 
+            # Ensure we always return the expected format
             return {
-                "chatbot_response": response_data["response"],
-                "user_options": response_data["options"],
+                "success": True,
+                "chatbot_response": response_data.get("response", "感谢您的消息。我在这里支持您。"),
+                "user_options": response_data.get("options", ["继续对话", "换个话题", "需要帮助"]),
                 "emotion": response_data.get("emotion", "neutral"),
                 "requires_followup": response_data.get("requires_followup", False)
             }
             
         except Exception as e:
             app.logger.error(f"Session update failed: {e}")
-            return {"success": False, "error": str(e)}, 500
+            return {"success": False, "error": "Internal server error"}, 500
 
     # JWT token verification middleware
     def token_required(f):
@@ -409,29 +469,6 @@ def create_app():
         except Exception as e:
             app.logger.error(f"User profile error: {e}")
             return {"success": False, "error": "Failed to get user profile"}, 500
-    
-    # JWT token verification middleware
-    def token_required(f):
-        """Decorator to verify JWT tokens"""
-        from functools import wraps
-        
-        @wraps(f)
-        def decorated(*args, **kwargs):
-            token = request.headers.get('Authorization')
-            
-            if not token:
-                return {"success": False, "error": "Token is missing"}, 401
-            
-            if token.startswith('Bearer '):
-                token = token[7:]
-            
-            user = User.verify_auth_token(token)
-            if not user:
-                return {"success": False, "error": "Token is invalid or expired"}, 401
-            
-            return f(user, *args, **kwargs)
-        
-        return decorated
 
     # Mobile login endpoint
     @app.route('/api/mobile_login', methods=['POST'])

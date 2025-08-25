@@ -12,7 +12,7 @@ const Login = ({ onLogin, onRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
   const usernameRef = useRef(null);
 
   // 自动聚焦用户名输入框

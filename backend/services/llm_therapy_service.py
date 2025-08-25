@@ -45,60 +45,103 @@ class LLMTherapyService:
     def process_message(self, user_id: int, session_id: int, message: str, 
                        input_type: str = "text") -> Dict[str, Any]:
         """Process user message using LLM and return therapeutic response"""
-        session_key = f"{user_id}_{session_id}"
-        
-        # Get or create conversation history
-        if session_key not in self.conversation_histories:
-            self.conversation_histories[session_key] = []
-        
-        conversation_history = self.conversation_histories[session_key]
-        
-        # Add user message to history
-        conversation_history.append({
-            "role": "user",
-            "content": message,
-            "timestamp": datetime.now().isoformat()
-        })
-        
-        # Analyze emotion and intention
-        emotion = self.llm.analyze_emotion(message)
-        intention = self.llm.analyze_intention(message)
-        
-        # Handle critical situations
-        if intention == "s":
-            response = self._handle_crisis_situation(message, user_id)
-            options = ["紧急求助", "继续对话", "我需要帮助"]
-        else:
-            # Generate therapeutic response using LLM
-            enhanced_prompt = self._create_therapeutic_prompt(
-                message, emotion, conversation_history, user_id
-            )
+        try:
+            # Validate input parameters
+            if not user_id or not session_id or not message:
+                logger.error("Missing required parameters in process_message")
+                return self._get_fallback_response(user_id, session_id)
             
-            response = self.llm.generate_response(
-                enhanced_prompt, 
-                max_length=300, 
-                temperature=0.7
-            )
+            session_key = f"{user_id}_{session_id}"
             
-            # Generate context-aware options
-            options = self._generate_response_options(response, emotion)
-        
-        # Add assistant response to history
-        conversation_history.append({
-            "role": "assistant", 
-            "content": response,
-            "timestamp": datetime.now().isoformat()
-        })
-        
-        # Keep only last 10 messages to manage context length
-        if len(conversation_history) > 10:
-            self.conversation_histories[session_key] = conversation_history[-10:]
-        
+            # Get or create conversation history
+            if session_key not in self.conversation_histories:
+                self.conversation_histories[session_key] = []
+            
+            conversation_history = self.conversation_histories[session_key]
+            
+            # Add user message to history
+            conversation_history.append({
+                "role": "user",
+                "content": message,
+                "timestamp": datetime.now().isoformat()
+            })
+            
+            # Analyze emotion and intention with error handling
+            try:
+                emotion = self.llm.analyze_emotion(message)
+                intention = self.llm.analyze_intention(message)
+            except Exception as e:
+                logger.warning(f"Emotion/intention analysis failed: {e}")
+                emotion = "neutral"
+                intention = "not_s"
+            
+            # Handle critical situations
+            if intention == "s":
+                response = self._handle_crisis_situation(message, user_id)
+                options = ["紧急求助", "继续对话", "我需要帮助"]
+            else:
+                # Generate therapeutic response using LLM
+                try:
+                    enhanced_prompt = self._create_therapeutic_prompt(
+                        message, emotion, conversation_history, user_id
+                    )
+                    
+                    response = self.llm.generate_response(
+                        enhanced_prompt, 
+                        max_length=300, 
+                        temperature=0.7
+                    )
+                    
+                    # Validate response
+                    if not response or not response.strip():
+                        response = "我在这里为您提供支持。请告诉我更多关于您的感受。"
+                    
+                except Exception as e:
+                    logger.error(f"Response generation failed: {e}")
+                    response = "我在这里为您提供支持。请告诉我更多关于您的感受。"
+                
+                # Generate context-aware options
+                try:
+                    options = self._generate_response_options(response, emotion)
+                except Exception as e:
+                    logger.warning(f"Options generation failed: {e}")
+                    options = ["继续对话", "换个话题", "需要帮助"]
+            
+            # Add assistant response to history
+            conversation_history.append({
+                "role": "assistant", 
+                "content": response,
+                "timestamp": datetime.now().isoformat()
+            })
+            
+            # Keep only last 10 messages to manage context length
+            if len(conversation_history) > 10:
+                self.conversation_histories[session_key] = conversation_history[-10:]
+            
+            # Ensure we always have valid options
+            if not options or len(options) == 0:
+                options = ["继续对话", "换个话题", "需要帮助"]
+            
+            return {
+                "response": response,
+                "options": options,
+                "emotion": emotion,
+                "requires_followup": self._requires_followup(response, emotion),
+                "session_id": session_id,
+                "user_id": user_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error processing message: {e}")
+            return self._get_fallback_response(user_id, session_id)
+    
+    def _get_fallback_response(self, user_id: int, session_id: int) -> Dict[str, Any]:
+        """Get fallback response when processing fails"""
         return {
-            "response": response,
-            "options": options,
-            "emotion": emotion,
-            "requires_followup": self._requires_followup(response, emotion),
+            "response": "我在这里为您提供支持。请告诉我更多关于您的感受。",
+            "options": ["继续对话", "换个话题", "需要帮助"],
+            "emotion": "neutral",
+            "requires_followup": False,
             "session_id": session_id,
             "user_id": user_id
         }
@@ -119,22 +162,37 @@ class LLMTherapyService:
         # Get therapeutic context from RAG if available
         therapeutic_context = self._get_therapeutic_context(message, emotion, user_id)
         
-        prompt = f"""You are an empathetic, professional therapeutic AI companion. 
-        Your role is to provide emotional support, therapeutic guidance, and compassionate listening.
+        prompt = f"""You are an empathetic, professional therapeutic AI companion providing mental health support.
         
-        Current user emotion detected: {emotion}
+        GUIDELINES:
+        - Be warm, supportive, and compassionate
+        - Validate the user's feelings and experiences
+        - Use therapeutic language and techniques
+        - Show empathy and understanding
+        - Keep responses conversational and natural
+        - Respond in Chinese as the user is communicating in Chinese
         
-        Conversation history:
+        CONTEXT:
+        - Current user emotion: {emotion}
+        - User ID: {user_id}
+        - Session context: Therapeutic conversation
+        
+        CONVERSATION HISTORY:
         {history_context}
         
-        Therapeutic context:
+        THERAPEUTIC CONTEXT:
         {therapeutic_context}
         
-        User's current message: "{message}"
+        USER'S CURRENT MESSAGE:
+        "{message}"
         
-        Please respond in a warm, supportive, and therapeutic manner. 
-        Show empathy, validate feelings, and provide helpful guidance.
-        Keep your response conversational and natural.
+        INSTRUCTIONS:
+        Please provide a therapeutic response that:
+        1. Acknowledges and validates the user's feelings
+        2. Shows empathy and understanding
+        3. Provides appropriate therapeutic guidance
+        4. Encourages further dialogue if needed
+        5. Maintains a professional yet warm tone
         
         Response:"""
         
@@ -165,26 +223,61 @@ class LLMTherapyService:
     def _generate_response_options(self, response: str, emotion: str) -> List[str]:
         """Generate context-aware response options using LLM"""
         
-        prompt = f"""Based on this therapeutic response and detected emotion ({emotion}), 
-        suggest 3-4 short response options that a user might want to choose next:
+        prompt = f"""Based on this therapeutic response and detected emotion, generate 3-4 appropriate response options for the user.
         
-        Response: "{response}"
+        THERAPEUTIC RESPONSE:
+        "{response}"
         
-        Emotion: {emotion}
+        DETECTED EMOTION:
+        {emotion}
         
-        Provide the options as a JSON list without any additional text:
-        ["option1", "option2", "option3"]"""
+        GUIDELINES FOR OPTIONS:
+        - Options should be short and actionable (2-6 words each)
+        - Options should be relevant to the therapeutic context
+        - Include options for continuing the conversation, seeking help, or changing topics
+        - Make options empathetic and supportive
+        - Respond in Chinese since the user is communicating in Chinese
+        
+        EXAMPLE FORMATS:
+        - ["继续分享感受", "需要专业帮助", "换个话题", "结束对话"]
+        - ["我想聊聊这个", "给我一些建议", "我需要安慰", "继续"]
+        
+        Provide ONLY a JSON array with 3-4 options, no additional text:
+        ["option1", "option2", "option3", "option4"]"""
         
         try:
-            options_text = self.llm.generate_response(prompt, max_length=100, temperature=0.3)
-            # Try to parse as JSON
-            options = json.loads(options_text)
+            options_text = self.llm.generate_response(prompt, max_length=150, temperature=0.3)
+            # Clean and parse the response
+            options_text = options_text.strip()
+            
+            # Try to extract JSON from the response
+            if options_text.startswith('[') and options_text.endswith(']'):
+                options = json.loads(options_text)
+            else:
+                # Try to find JSON in the response
+                import re
+                json_match = re.search(r'\[.*\]', options_text)
+                if json_match:
+                    options = json.loads(json_match.group())
+                else:
+                    raise ValueError("No JSON found in response")
+            
             if isinstance(options, list) and len(options) >= 2:
-                return options[:4]  # Return max 4 options
+                # Clean and validate options
+                cleaned_options = []
+                for option in options[:4]:  # Max 4 options
+                    if isinstance(option, str) and option.strip():
+                        cleaned_options.append(option.strip())
+                
+                if cleaned_options:
+                    return cleaned_options
+            
+            raise ValueError("Invalid options format")
+            
         except Exception as e:
             logger.warning(f"Failed to generate options with LLM: {e}")
         
-        # Fallback options based on emotion
+        # Enhanced fallback options based on emotion
         fallback_options = {
             "happy": ["继续分享", "讨论其他话题", "寻求建议", "结束对话"],
             "sad": ["需要安慰", "讨论原因", "寻求帮助", "换个话题"],

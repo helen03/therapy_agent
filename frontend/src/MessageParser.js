@@ -7,26 +7,12 @@ class MessageParser {
 
   // This method is called inside the chatbot when it receives a message from the user.
   parse(message) {
-    // Case: User has not provided id yet
-    if (this.state.username == null) {
-      return this.actionProvider.askForPassword(message);
-    } else if (this.state.password == null) {
-      return this.actionProvider.updateUserID(this.state.username, message);
-    } else if (this.state.askingForProtocol && parseInt(message) >= 1 && parseInt(message) <= 20) {
-
-      const choice_info = {
-        user_id: this.state.userState,
-        session_id: this.state.sessionID,
-        user_choice: message,
-        input_type: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-      };
-      this.actionProvider.stopAskingForProtocol()
-
-      return this.actionProvider.sendRequest(choice_info);
-    } else if (this.state.askingForProtocol && (parseInt(message) < 1 || parseInt(message) > 20)) {
-      return this.actionProvider.askForProtocol()
-    }
-    else {
+    console.log('MessageParser received:', message);
+    console.log('Current state:', this.state);
+    
+    // Case: User is already logged in, proceed with normal message processing
+    if (this.state.userState !== null && this.state.sessionID !== null) {
+      console.log('User is logged in, processing message...');
       let input_type = null;
       if (this.state.inputType && this.state.inputType.length === 1) {
         input_type = this.state.inputType[0]
@@ -34,26 +20,49 @@ class MessageParser {
         input_type = this.state.inputType || null
       }
       const currentOptionToShow = this.state.currentOptionToShow
-      // Case: user types when they enter text instead of selecting an option
-      if ((currentOptionToShow === "Continue" && message !== "Continue") ||
-        (currentOptionToShow === "Emotion" && (message !== "Happy" && message !== "Sad" && message !== "Angry" && message !== "Neutral")) ||
-        (currentOptionToShow === "RecentDistant" && (message !== "Recent" && message !== "Distant")) ||
-        (currentOptionToShow === "Feedback" && (message !== "Better" && message !== "Worse" && message !== "No change")) ||
-        (currentOptionToShow === "Protocol" && (!this.state.protocols.includes(message))) ||
-        (currentOptionToShow === "YesNo" && (message !== "Yes" && message !== "No"))
-      ) {
-        this.actionProvider.copyLastMessage()
-      } else {
+      
+      // Handle protocol selection case
+      if (this.state.askingForProtocol) {
+        if (parseInt(message) >= 1 && parseInt(message) <= 20) {
+          const choice_info = {
+            user_id: this.state.userState,
+            session_id: this.state.sessionID,
+            user_choice: message,
+            input_type: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+          };
+          this.actionProvider.stopAskingForProtocol();
+          return this.actionProvider.sendRequest(choice_info);
+        } else {
+          return this.actionProvider.askForProtocol();
+        }
+      }
+      
+      // Check if input matches expected options
+      // 修改为总是允许自由文本输入，不进行选项验证
+      const isValidInput = true;
+      
+      console.log('Input validation bypassed, allowing free text input');
+      
+      if (isValidInput) {
         const choice_info = {
           user_id: this.state.userState,
           session_id: this.state.sessionID,
           user_choice: message,
           input_type: input_type,
         };
+        console.log('Sending choice_info:', choice_info);
         return this.actionProvider.sendRequest(choice_info);
+      } else {
+        // 保留处理无效输入的逻辑，但正常情况下不会执行到这里
+        console.log('Invalid input, showing feedback');
+        this.actionProvider.handleInvalidInput(currentOptionToShow);
       }
+    } else {
+      console.log('User not logged in, ignoring message');
+      console.log('userState:', this.state.userState);
+      console.log('sessionID:', this.state.sessionID);
     }
-
+    // No fallback to login/password prompts when user is already logged in via main login page
   }
 }
 
