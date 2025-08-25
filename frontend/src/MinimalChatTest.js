@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getEnvironment } from './utils/environment';
 
 const MinimalChatTest = () => {
   const [messages, setMessages] = useState([]);
@@ -16,7 +17,8 @@ const MinimalChatTest = () => {
   const login = async () => {
     try {
       console.log('开始登录...');
-      const response = await axios.post('http://localhost:5001/api/login', {
+      const { apiBaseUrl } = getEnvironment();
+      const response = await axios.post(`${apiBaseUrl}/api/login`, {
         user_info: { username: 'user1', password: 'ph6n76gec9' }
       });
       
@@ -62,7 +64,8 @@ const MinimalChatTest = () => {
       
       console.log('请求数据:', requestData);
       
-      const response = await axios.post('http://localhost:5001/api/update_session', requestData);
+      const { apiBaseUrl } = getEnvironment();
+      const response = await axios.post(`${apiBaseUrl}/api/update_session`, requestData);
       
       console.log('收到响应:', response.data);
       

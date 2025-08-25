@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getEnvironment } from './utils/environment';
 // ActionProvider starter code
 class ActionProvider {
   constructor(createChatBotMessage, setStateFunc, createClientMessage) {
@@ -32,8 +33,8 @@ class ActionProvider {
       password: password,
     }));
 
-      // Get API base URL from environment or use default for local development
-    const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
+      // Get API base URL from environment utility
+    const { apiBaseUrl } = getEnvironment();
     const uri = `${apiBaseUrl}/api/login`
     let user_info = {
       username: username,
@@ -85,8 +86,8 @@ class ActionProvider {
   // Send API request
   sendRequest = async (choice_info) => {
     try {
-      // Get API base URL from environment or use default for local development
-      const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+      // Get API base URL from environment utility
+      const { apiBaseUrl } = getEnvironment();
       const uri = `${apiBaseUrl}/api/update_session`;
       
       console.log("Sending request to:", uri);
@@ -136,41 +137,50 @@ class ActionProvider {
 
       // Extract response and options with fallbacks
       const chatbotResponse = dataReceived.chatbot_response || dataReceived.response || "感谢您的消息。我在这里支持您。";
-      const userOptions = dataReceived.user_options || dataReceived.options || ["继续对话", "换个话题", "需要帮助"];
+      const userOptions = dataReceived.user_options || dataReceived.options || [];
+      const emotion = dataReceived.emotion || "neutral";
       
-      console.log("Processing response:", { chatbotResponse, userOptions });
+      console.log("Processing response:", { chatbotResponse, userOptions, emotion });
 
+      // Check if UltraThink mode is enabled
+      const isUltraThinkMode = this.state.ultraThinkMode;
+      
       let optionsToShow = null;
-
-      // Handle different option types
-      if (Array.isArray(userOptions)) {
-        // Required options: null or "YesNo" or "Continue" or "Feedback" or "Emotion"}
-        if (userOptions.length === 1 && (userOptions[0] === "open_text" || userOptions[0] === "any")) {
+      
+      // In UltraThink mode, minimize options and encourage natural conversation
+      if (isUltraThinkMode) {
+        // Only show options for critical situations or when specifically needed
+        if (userOptions.length === 1 && userOptions[0] === "open_text") {
           optionsToShow = null;
-        } else if (userOptions.length === 1 && userOptions[0] === "continue") {
-          optionsToShow = "Continue";
         } else if (userOptions.length === 2 && userOptions[0] === "yes" && userOptions[1] === "no") {
-          optionsToShow = "YesNo";
-        } else if (userOptions.length === 2 && userOptions[0] === "yes, i would like to try one of these protocols" && userOptions[1] === "no, i would like to try something else") {
-          optionsToShow = "YesNoProtocols";
-        } else if (userOptions.length === 2 && userOptions[0] === "recent" && userOptions[1] === "distant") {
-          optionsToShow = "RecentDistant";
-        } else if (userOptions.length === 3 && userOptions[0] === "positive" && userOptions[1] === "neutral" && userOptions[2] === "negative") {
-          optionsToShow = "Emotion";
-        } else if (userOptions.length === 3 && userOptions[0] === "better" && userOptions[1] === "worse" && userOptions[2] === "no change") {
-          optionsToShow = "Feedback";
+          optionsToShow = "YesNo"; // Keep yes/no for important decisions
         } else {
-          // Protocol case or default options
-          optionsToShow = "Protocol";
-          this.setState((state) => ({
-            ...state,
-            protocols: userOptions,
-            askingForProtocol: true
-          }));
+          optionsToShow = null; // Hide most options in UltraThink mode
         }
       } else {
-        // Fallback for non-array options
-        optionsToShow = null;
+        // Normal mode - show options as before
+        if (Array.isArray(userOptions)) {
+          if (userOptions.length === 1 && (userOptions[0] === "open_text" || userOptions[0] === "any")) {
+            optionsToShow = null;
+          } else if (userOptions.length === 1 && userOptions[0] === "continue") {
+            optionsToShow = "Continue";
+          } else if (userOptions.length === 2 && userOptions[0] === "yes" && userOptions[1] === "no") {
+            optionsToShow = "YesNo";
+          } else if (userOptions.length === 2 && userOptions[0] === "recent" && userOptions[1] === "distant") {
+            optionsToShow = "RecentDistant";
+          } else if (userOptions.length === 3 && userOptions[0] === "positive" && userOptions[1] === "neutral" && userOptions[2] === "negative") {
+            optionsToShow = "Emotion";
+          } else if (userOptions.length === 3 && userOptions[0] === "better" && userOptions[1] === "worse" && userOptions[2] === "no change") {
+            optionsToShow = "Feedback";
+          } else if (userOptions.length > 0) {
+            optionsToShow = "InitialOptions";
+            this.setState((state) => ({
+              ...state,
+              initialChoices: userOptions,
+              inputType: userOptions
+            }));
+          }
+        }
       }
 
       this.setState((state) => ({
@@ -178,21 +188,34 @@ class ActionProvider {
         currentOptionToShow: optionsToShow,
       }));
 
+      // Add emotion indicator if in UltraThink mode
+      let responseWithEmotion = chatbotResponse;
+      if (isUltraThinkMode && emotion !== "neutral") {
+        const emotionEmoji = {
+          "happy": "😊",
+          "sad": "😢",
+          "angry": "😠",
+          "anxious": "😰",
+          "neutral": ""
+        };
+        responseWithEmotion = `${emotionEmoji[emotion] || ""} ${chatbotResponse}`;
+      }
+
       // Handle responses - either strings or list of strings
-      if (typeof chatbotResponse === "string") {
-        const messages = this.createChatBotMessage(chatbotResponse, {
+      if (typeof responseWithEmotion === "string") {
+        const messages = this.createChatBotMessage(responseWithEmotion, {
           withAvatar: true,
           widget: optionsToShow,
         });
         this.addMessageToBotState(messages);
-      } else if (Array.isArray(chatbotResponse)) {
-        for (let i = 0; i < chatbotResponse.length; i++) {
+      } else if (Array.isArray(responseWithEmotion)) {
+        for (let i = 0; i < responseWithEmotion.length; i++) {
           let widget = null;
           // Shows options after last message
-          if (i === chatbotResponse.length - 1) {
+          if (i === responseWithEmotion.length - 1) {
             widget = optionsToShow;
           }
-          const message_to_add = this.createChatBotMessage(chatbotResponse[i], {
+          const message_to_add = this.createChatBotMessage(responseWithEmotion[i], {
             withAvatar: true,
             widget: widget,
             delay: (i)*1500,

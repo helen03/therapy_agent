@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import { getEnvironment } from './utils/environment';
 import './Login.css';
 
 const Login = ({ onLogin, onRegister }) => {
@@ -12,7 +13,7 @@ const Login = ({ onLogin, onRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
+  const { apiBaseUrl } = getEnvironment();
   const usernameRef = useRef(null);
 
   // 自动聚焦用户名输入框

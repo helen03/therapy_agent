@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选项显示测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .options-container {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        .option-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            display: inline-block;
+        }
+        .option-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 选项显示修复验证</h1>
+        
+        <div class="test-container">
+            <h2>1. 登录测试</h2>
+            <button onclick="testLogin()">测试登录并获取初始选项</button>
+            <div id="login-status"></div>
+        </div>
+        
+        <div class="test-container">
+            <h2>2. 聊天测试</h2>
+            <button onclick="testChatWithOptions()">测试带选项的聊天</button>
+            <button onclick="testChatWithoutOptions()">测试不带选项的聊天</button>
+            <div id="chat-status"></div>
+        </div>
+        
+        <div class="test-container">
+            <h2>3. 选项显示测试</h2>
+            <div id="options-display"></div>
+        </div>
+        
+        <div class="test-container">
+            <h2>4. API响应日志</h2>
+            <pre id="api-log"></pre>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentSession = null;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('api-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logDiv.textContent += logEntry + '\n';
+            console.log(logEntry);
+        }
+        
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function displayOptions(options, title = "选项显示") {
+            const container = document.getElementById('options-display');
+            
+            if (!options || options.length === 0) {
+                container.innerHTML = `<div class="status info">❌ 没有选项显示</div>`;
+                return;
+            }
+            
+            let optionsHtml = `<div class="options-container">
+                <h3>${title}</h3>
+                <div class="options-list">`;
+            
+            options.forEach((option, index) => {
+                optionsHtml += `<span class="option-button">${option}</span>`;
+            });
+            
+            optionsHtml += `</div></div>`;
+            container.innerHTML = optionsHtml;
+        }
+        
+        async function testLogin() {
+            showStatus('login-status', '测试登录中...', 'info');
+            log('开始登录测试');
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3000'
+                    },
+                    body: JSON.stringify({
+                        user_info: { username: 'user1', password: 'ph6n76gec9' }
+                    })
+                });
+                
+                const data = await response.json();
+                log(`登录响应: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    currentUser = data.userID;
+                    currentSession = data.sessionID;
+                    
+                    showStatus('login-status', 
+                        `✅ 登录成功<br>用户ID: ${data.userID}<br>会话ID: ${data.sessionID}<br>初始选项数量: ${data.choices ? data.choices.length : 0}`, 
+                        'success'
+                    );
+                    
+                    // 显示初始选项
+                    if (data.choices && data.choices.length > 0) {
+                        displayOptions(data.choices, "初始选项");
+                        log(`显示初始选项: ${data.choices.join(', ')}`);
+                    } else {
+                        showStatus('options-display', '❌ 登录响应中没有选项', 'error');
+                    }
+                } else {
+                    showStatus('login-status', `❌ 登录失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('login-status', `❌ 登录异常: ${error.message}`, 'error');
+                log(`登录异常: ${error.message}`);
+            }
+        }
+        
+        async function testChatWithOptions() {
+            if (!currentUser || !currentSession) {
+                showStatus('chat-status', '❌ 请先登录', 'error');
+                return;
+            }
+            
+            showStatus('chat-status', '测试带选项的聊天...', 'info');
+            log('测试带选项的聊天');
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/update_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3000'
+                    },
+                    body: JSON.stringify({
+                        choice_info: {
+                            user_id: currentUser,
+                            session_id: currentSession,
+                            user_choice: '我感觉很好',
+                            input_type: ['open_text']
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                log(`聊天响应: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.chatbot_response) {
+                    showStatus('chat-status', 
+                        `✅ 聊天成功<br>回复: ${data.chatbot_response}<br>选项数量: ${data.user_options ? data.user_options.length : 0}`, 
+                        'success'
+                    );
+                    
+                    // 显示聊天选项
+                    if (data.user_options && data.user_options.length > 0) {
+                        displayOptions(data.user_options, "聊天选项");
+                        log(`显示聊天选项: ${data.user_options.join(', ')}`);
+                    } else {
+                        showStatus('options-display', '❌ 聊天响应中没有选项', 'error');
+                    }
+                } else {
+                    showStatus('chat-status', `❌ 聊天失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('chat-status', `❌ 聊天异常: ${error.message}`, 'error');
+                log(`聊天异常: ${error.message}`);
+            }
+        }
+        
+        async function testChatWithoutOptions() {
+            if (!currentUser || !currentSession) {
+                showStatus('chat-status', '❌ 请先登录', 'error');
+                return;
+            }
+            
+            showStatus('chat-status', '测试不带选项的聊天...', 'info');
+            log('测试不带选项的聊天');
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/update_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3000'
+                    },
+                    body: JSON.stringify({
+                        choice_info: {
+                            user_id: currentUser,
+                            session_id: currentSession,
+                            user_choice: 'continue',
+                            input_type: ['continue']
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                log(`聊天响应: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.chatbot_response) {
+                    showStatus('chat-status', 
+                        `✅ 聊天成功<br>回复: ${data.chatbot_response}<br>选项类型: ${data.user_options ? data.user_options.join(', ') : '无'}`, 
+                        'success'
+                    );
+                    
+                    // 检查是否应该显示选项
+                    if (data.user_options && data.user_options.length > 0) {
+                        if (data.user_options[0] === 'open_text' || data.user_options[0] === 'any') {
+                            showStatus('options-display', '✅ 正确：open_text选项不显示按钮', 'success');
+                            log('open_text选项，不显示按钮');
+                        } else {
+                            displayOptions(data.user_options, "聊天选项");
+                            log(`显示选项: ${data.user_options.join(', ')}`);
+                        }
+                    } else {
+                        showStatus('options-display', 'ℹ️ 没有选项，用户可以自由输入', 'info');
+                    }
+                } else {
+                    showStatus('chat-status', `❌ 聊天失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('chat-status', `❌ 聊天异常: ${error.message}`, 'error');
+                log(`聊天异常: ${error.message}`);
+            }
+        }
+        
+        // 页面加载时的说明
+        window.onload = function() {
+            log('选项显示测试页面已加载');
+            log('请按顺序测试：');
+            log('1. 测试登录 - 验证初始选项显示');
+            log('2. 测试带选项的聊天 - 验证动态选项显示');
+            log('3. 测试不带选项的聊天 - 验证自由输入模式');
+        };
+    </script>
+</body>
+</html>

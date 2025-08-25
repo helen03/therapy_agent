@@ -27,7 +27,7 @@ class LLMIntegration:
         
         # 设置默认API端点
         if self.api_type == "openai" and not self.api_base:
-            self.api_base = "https://api.openai.com/v1"
+            self.api_base = "https://api.deepseek.com/v1"
         elif self.api_type == "azure" and not self.api_base:
             self.api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
     

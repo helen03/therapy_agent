@@ -1,192 +1,115 @@
 import React, { useState, useEffect } from "react";
-import { Chatbot } from "react-chatbot-kit";
-import { createChatBotMessage } from "react-chatbot-kit";
+import { Chatbot, createChatBotMessage } from "react-chatbot-kit";
 import "./App.css";
 import MessageParser from "./MessageParser";
 import ActionProvider from "./ActionProvider";
-import config from "./config";
+import baseConfig from "./config";
 import Login from "./Login";
-import TestChat from "./TestChat";
-import MinimalChatTest from "./MinimalChatTest";
+import { logEnvironment } from "./utils/environment";
 
 const App = () => {
   const [showTools, setShowTools] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
-  const [chatConfig, setChatConfig] = useState(config);
-  const [testMode, setTestMode] = useState(false);
-  const [minimalTestMode, setMinimalTestMode] = useState(false);
+  const [chatConfig, setChatConfig] = useState(baseConfig);
+  const [ultraThinkMode, setUltraThinkMode] = useState(false);
 
+  useEffect(() => {
+    logEnvironment();
+  }, []);
+
+  /** 登录逻辑 */
   const handleLogin = (userData) => {
-    console.log('App.js handleLogin called with:', userData);
+    console.log("App.js handleLogin called with:", userData);
     setUserInfo(userData);
     setIsLoggedIn(true);
-    
-    // Create initial messages using the backend response
-    const initialMessages = [
-      createChatBotMessage(`Hi ${userData.username}, welcome to today's therapy session!`, {
-        withAvatar: true,
-        delay: 0,
-      }),
-    ];
-    
-    // Add the model prompt from backend if available
-    if (userData.model_prompt) {
-      initialMessages.push(
-        createChatBotMessage(userData.model_prompt, {
-          withAvatar: true,
-          delay: 1500,
-          widget: userData.choices && userData.choices.length > 0 ? "InitialOptions" : null,
-        })
-      );
-    } else {
-      initialMessages.push(
-        createChatBotMessage("I'm here to help you with your emotional well-being. Let's begin our session.", {
-          withAvatar: true,
-          delay: 1500,
-        })
-      );
-    }
-    
-    // Update config with user info and initial messages
-    const updatedConfig = {
-      ...config,
-      initialMessages: initialMessages,
-      state: {
-        ...config.state,
-        userState: userData.userID,
-        sessionID: userData.sessionID,
-        username: userData.username,
-        // Store the initial choices from backend
-        initialChoices: userData.choices || [],
-        // Store inputType from backend for proper message processing
-        inputType: userData.choices || [],
-        currentOptionToShow: userData.choices && userData.choices.length > 0 ? "InitialOptions" : null,
-        messages: []
-      }
-    };
-    
-    console.log('App.js updating chat config with user data:', {
-      userState: userData.userID,
+
+    // Store user info in localStorage for the new HTML page
+    const userSessionData = {
+      userID: userData.userID,
       sessionID: userData.sessionID,
       username: userData.username,
-      initialChoices: userData.choices,
-      inputType: userData.choices,
-      currentOptionToShow: userData.choices && userData.choices.length > 0 ? "InitialOptions" : null
-    });
+      token: userData.token,
+      model_prompt: userData.model_prompt || "你好！欢迎回来。今天感觉怎么样？有什么想和我聊的吗？",
+      choices: userData.choices || []
+    };
     
-    setChatConfig(updatedConfig);
+    localStorage.setItem('userSessionData', JSON.stringify(userSessionData));
+    
+    // Redirect to the new therapy chat page
+    window.location.href = '/therapy-chat.html';
   };
 
+  /** 注册逻辑 */
   const handleRegister = (userData) => {
     setUserInfo(userData);
     setIsLoggedIn(true);
-    
-    // Create welcome messages for new user
-    const welcomeMessages = [
-      createChatBotMessage(`Welcome to MindGuide, ${userData.username}!`, {
-        withAvatar: true,
-        delay: 0,
-      }),
-      createChatBotMessage("I'm glad you're here. Let's start your first therapy session together.", {
-        withAvatar: true,
-        delay: 1500,
-      }),
-    ];
-    
-    // Update config with user info and welcome messages
-    const updatedConfig = {
-      ...config,
-      initialMessages: welcomeMessages,
-      state: {
-        ...config.state,
-        userState: userData.userID,
-        sessionID: userData.sessionID,
-        username: userData.username,
-      }
+
+    // Store user info in localStorage for the new HTML page
+    const userSessionData = {
+      userID: userData.userID,
+      sessionID: userData.sessionID,
+      username: userData.username,
+      token: userData.token,
+      model_prompt: "欢迎加入MindGuide！让我们一起开始您的第一次治疗会话。",
+      choices: userData.choices || []
     };
     
-    setChatConfig(updatedConfig);
+    localStorage.setItem('userSessionData', JSON.stringify(userSessionData));
+    
+    // Redirect to the new therapy chat page
+    window.location.href = '/therapy-chat.html';
   };
 
+  /** 登出 */
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserInfo(null);
-    setChatConfig(config); // Reset to original config
+    setChatConfig(baseConfig); // 重置 config
   };
 
-  // 添加测试模式切换
-  const toggleTestMode = () => {
-    setTestMode(!testMode);
-    setMinimalTestMode(false);
-    console.log('Test mode toggled:', !testMode);
+  /** UltraThink 模式切换 */
+  const toggleUltraThinkMode = () => {
+    setUltraThinkMode(!ultraThinkMode);
+    console.log("UltraThink mode toggled:", !ultraThinkMode);
   };
 
-  // 添加最小化测试模式切换
-  const toggleMinimalTestMode = () => {
-    setMinimalTestMode(!minimalTestMode);
-    setTestMode(false);
-    console.log('Minimal test mode toggled:', !minimalTestMode);
-  };
-
+  /** 未登录时显示登录页 */
   if (!isLoggedIn) {
     return (
-      <div className="App">
+      <div className="app-container">
         <div className="app-header">
           <h1>MindGuide Therapy Assistant</h1>
           <div className="header-controls">
-            <button 
-              className="tools-toggle"
-              onClick={toggleTestMode}
-            >
-              {testMode ? '退出测试' : '测试模式'}
-            </button>
-            <button 
-              className="tools-toggle"
-              onClick={toggleMinimalTestMode}
-            >
-              {minimalTestMode ? '退出最小测试' : '最小测试'}
+            <button className="tools-toggle" onClick={toggleUltraThinkMode}>
+              {ultraThinkMode ? "退出深度思考" : "🧠 UltraThink"}
             </button>
           </div>
         </div>
-        {testMode ? <TestChat /> : minimalTestMode ? <MinimalChatTest /> : <Login onLogin={handleLogin} onRegister={handleRegister} />}
+        <Login onLogin={handleLogin} onRegister={handleRegister} />
       </div>
     );
   }
 
+  /** 登录后显示聊天 + 工具栏 */
   return (
-    <div className="App">
+    <div className="app-container">
       <div className="app-header">
         <h1>MindGuide Therapy Assistant</h1>
         <div className="header-controls">
           <span className="user-info">欢迎, {userInfo?.username}</span>
-          <button 
-            className="tools-toggle"
-            onClick={() => setShowTools(!showTools)}
-          >
-            {showTools ? '隐藏工具' : '显示工具'}
+          <button className="tools-toggle" onClick={() => setShowTools(!showTools)}>
+            {showTools ? "隐藏工具" : "显示工具"}
           </button>
-          <button 
-            className="tools-toggle"
-            onClick={toggleTestMode}
-          >
-            {testMode ? '正常模式' : '测试模式'}
+          <button className="tools-toggle" onClick={toggleUltraThinkMode}>
+            {ultraThinkMode ? "退出深度思考" : "🧠 UltraThink"}
           </button>
-          <button 
-            className="tools-toggle"
-            onClick={toggleMinimalTestMode}
-          >
-            {minimalTestMode ? '正常模式' : '最小测试'}
-          </button>
-          <button 
-            className="logout-btn"
-            onClick={handleLogout}
-          >
+          <button className="logout-btn" onClick={handleLogout}>
             退出登录
           </button>
         </div>
       </div>
-      
+
       <div className="app-content">
         {showTools && (
           <div className="tools-sidebar">
@@ -205,23 +128,18 @@ const App = () => {
             </div>
           </div>
         )}
-        
-        <div className={`chat-container ${showTools ? 'with-tools' : ''}`}>
-          {testMode ? (
-            <TestChat />
-          ) : minimalTestMode ? (
-            <MinimalChatTest />
-          ) : (
-            <Chatbot
-              config={chatConfig}
-              messageParser={MessageParser}
-              actionProvider={ActionProvider}
-            />
-          )}
+
+        <div className={`chat-container ${showTools ? "with-tools" : ""}`}>
+          <Chatbot
+            key={chatConfig.state.sessionID}   // 保证更新时强制挂载
+            config={chatConfig}
+            messageParser={MessageParser}
+            actionProvider={ActionProvider}
+          />
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default App;

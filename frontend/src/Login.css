@@ -177,6 +177,8 @@
   position: relative;
   overflow: auto;
   will-change: transform;
+  border-top: 3px solid var(--primary-color);
+  border-bottom: 3px solid var(--primary-color);
 }
 
 /* 为Mac Safari添加的视口高度修复 */
