@@ -4,7 +4,9 @@
 # # Creates sql tables for use by flask
 # # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-from backend import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 from sqlalchemy import DateTime
 import bcrypt
 import jwt

@@ -9,6 +9,7 @@ import FeedbackOptions from "./widgets/options/GeneralOptions/FeedbackOptions";
 import EmotionOptions from "./widgets/options/GeneralOptions/EmotionOptions";
 import EventOptions from "./widgets/options/GeneralOptions/EventOptions";
 import YesNoProtocolOptions from "./widgets/options/GeneralOptions/YesNoProtocolsOptions";
+import InitialOptions from "./widgets/options/GeneralOptions/InitialOptions";
 
 // import Kai from "./Kai.png"
 
@@ -23,20 +24,7 @@ const botName = "MindGuide";
 
 const config = {
   botName: botName,
-  initialMessages: [
-    createChatBotMessage("Hi, I am MindGuide, welcome to today's session.", {
-      withAvatar: true,
-      delay: 0,
-    }),
-    createChatBotMessage("Before we begin, I just need you to go through authentication.", {
-      withAvatar: true,
-      delay: 1500,
-    }),
-    createChatBotMessage("Please enter your username:", {
-      withAvatar: true,
-      delay: 3000,
-    }),
-  ],
+  initialMessages: [], // Will be populated dynamically based on login status
 
   state: {
     userState: null,
@@ -44,7 +32,8 @@ const config = {
     password: null,
     sessionID: null,
     protocols: [],
-    askingForProtocol: false
+    askingForProtocol: false,
+    initialChoices: []
   },
 
   customComponents: {
@@ -88,6 +77,11 @@ const config = {
       widgetName: "RecentDistant",
       widgetFunc: (props) => <EventOptions {...props} />,
       mapStateToProps: ["userState", "sessionID"],
+    },
+    {
+      widgetName: "InitialOptions",
+      widgetFunc: (props) => <InitialOptions {...props} />,
+      mapStateToProps: ["userState", "sessionID", "initialChoices"],
     },
   ],
 };

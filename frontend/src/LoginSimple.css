@@ -1,0 +1,493 @@
+/* 简化但美观的登录页面样式 */
+
+/* 基础变量 */
+:root {
+  --primary-color: #6366f1;
+  --primary-hover: #5558e3;
+  --secondary-color: #8b5cf6;
+  --accent-color: #ec4899;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+  
+  --bg-gradient-1: #667eea;
+  --bg-gradient-2: #764ba2;
+  
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-light: #ffffff;
+  
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --border-color: #e5e7eb;
+  --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* 全局样式 */
+.login-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* 背景装饰形状 */
+.background-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 6s ease-in-out infinite;
+}
+
+.shape-1 {
+  width: 80px;
+  height: 80px;
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.shape-2 {
+  width: 120px;
+  height: 120px;
+  top: 60%;
+  right: 10%;
+  animation-delay: 2s;
+}
+
+.shape-3 {
+  width: 60px;
+  height: 60px;
+  top: 80%;
+  left: 20%;
+  animation-delay: 4s;
+}
+
+.shape-4 {
+  width: 100px;
+  height: 100px;
+  top: 10%;
+  right: 30%;
+  animation-delay: 1s;
+}
+
+.shape-5 {
+  width: 40px;
+  height: 40px;
+  top: 40%;
+  left: 70%;
+  animation-delay: 3s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
+/* 登录表单 */
+.login-form {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 10;
+}
+
+/* 品牌头部 */
+.brand-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.brand-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.brand-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.brand-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* 表单容器 */
+.form-container {
+  margin-bottom: 1.5rem;
+}
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.form-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+/* 错误消息 */
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.error-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* 表单组 */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-input:disabled {
+  background: var(--border-color);
+  cursor: not-allowed;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: var(--primary-color);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 表单选项 */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+}
+
+.forgot-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: var(--primary-hover);
+}
+
+/* 提交按钮 */
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  background: var(--text-secondary);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 切换模式 */
+.switch-mode {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.switch-mode p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.switch-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.switch-btn:hover {
+  color: var(--primary-hover);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.switch-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 演示信息 */
+.demo-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(99, 102, 241, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.demo-info h4 {
+  margin: 0 0 0.75rem 0;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.demo-accounts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.demo-account {
+  padding: 0.5rem;
+  background: white;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.demo-account strong {
+  color: var(--text-primary);
+}
+
+.demo-note {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .login-form {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .brand-title {
+    font-size: 1.75rem;
+  }
+  
+  .demo-accounts {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-options {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --card-bg: rgba(31, 41, 55, 0.95);
+    --border-color: #374151;
+  }
+  
+  .form-input {
+    background: rgba(17, 24, 39, 0.8);
+    color: var(--text-primary);
+  }
+  
+  .demo-account {
+    background: rgba(31, 41, 55, 0.8);
+  }
+}
+
+/* 减少动画偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  .shape,
+  .brand-icon,
+  .submit-btn {
+    animation: none;
+  }
+}

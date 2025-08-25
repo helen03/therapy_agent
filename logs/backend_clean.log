@@ -1,0 +1,276 @@
+2025-08-24 23:53:16,669 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-08-24 23:53:16,670 INFO werkzeug MainThread :  * Running on http://192.168.3.239:5001/ (Press CTRL+C to quit)
+2025-08-24 23:53:16,711 INFO werkzeug MainThread :  * Restarting with watchdog (fsevents)
+2025-08-24 23:53:17,660 WARNING werkzeug MainThread :  * Debugger is active!
+2025-08-24 23:53:17,716 INFO werkzeug MainThread :  * Debugger PIN: 749-924-465
+2025-08-24 23:55:32,691 INFO werkzeug Thread-1 :  * Detected change in '/Users/liuyanjun/therapy_agent/backend/services/llm_therapy_service.py.tmp.55111.1756050932669', reloading
+2025-08-24 23:55:32,692 INFO werkzeug Thread-1 :  * Detected change in '/Users/liuyanjun/therapy_agent/backend/services/llm_therapy_service.py', reloading
+2025-08-24 23:55:33,841 INFO werkzeug MainThread :  * Restarting with watchdog (fsevents)
+2025-08-24 23:55:34,530 WARNING werkzeug MainThread :  * Debugger is active!
+2025-08-24 23:55:34,572 INFO werkzeug MainThread :  * Debugger PIN: 749-924-465
+2025-08-24 23:58:51,064 INFO werkzeug Thread-1 :  * Detected change in '/Users/liuyanjun/therapy_agent/run_backend.py', reloading
+2025-08-24 23:58:52,156 INFO werkzeug MainThread :  * Restarting with watchdog (fsevents)
+2025-08-24 23:58:52,877 WARNING werkzeug MainThread :  * Debugger is active!
+2025-08-24 23:58:52,913 INFO werkzeug MainThread :  * Debugger PIN: 749-924-465
+2025-08-25 00:04:31,928 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-08-25 00:28:25,261 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 00:39:17,708 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 00:42:51,509 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 00:54:25,673 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 01:04:20,547 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 01:06:54,506 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 01:16:14,220 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 06:24:23,630 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 06:27:31,500 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 06:29:06,522 WARNING werkzeug MainThread :  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-08-25 06:29:06,523 INFO werkzeug MainThread :  * Running on http://192.168.3.239:5001/ (Press CTRL+C to quit)
+2025-08-25 06:29:06,565 INFO werkzeug MainThread :  * Restarting with watchdog (fsevents)
+2025-08-25 06:29:50,581 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+2025-08-25 06:29:50,598 INFO werkzeug MainThread :  * Restarting with watchdog (fsevents)
+2025-08-25 06:30:28,648 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+2025-08-25 06:31:23,830 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+2025-08-25 06:32:15,366 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+2025-08-25 06:32:15,384 INFO werkzeug MainThread :  * Restarting with watchdog (fsevents)
+2025-08-25 06:32:16,006 WARNING werkzeug MainThread :  * Debugger is active!
+2025-08-25 06:32:16,058 INFO werkzeug MainThread :  * Debugger PIN: 749-924-465
+2025-08-25 06:34:23,760 INFO werkzeug Thread-1 :  * Detected change in '/Users/liuyanjun/therapy_agent/run_backend.py.tmp.23856.1756074863747', reloading
+2025-08-25 06:34:23,761 INFO werkzeug Thread-1 :  * Detected change in '/Users/liuyanjun/therapy_agent/run_backend.py', reloading
+2025-08-25 06:34:24,976 INFO werkzeug MainThread :  * Restarting with watchdog (fsevents)
+2025-08-25 06:35:00,806 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+2025-08-25 06:35:43,869 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+2025-08-25 06:36:04,630 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+2025-08-25 06:36:55,208 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 06:37:52,001 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5002/ (Press CTRL+C to quit)
+2025-08-25 06:38:13,338 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5002/ (Press CTRL+C to quit)
+2025-08-25 06:38:49,770 INFO werkzeug Thread-1 : 127.0.0.1 - - [25/Aug/2025 06:38:49] "OPTIONS /api/login HTTP/1.1" 200 -
+2025-08-25 06:38:49,969 INFO werkzeug Thread-2 : 127.0.0.1 - - [25/Aug/2025 06:38:49] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-08-25 06:38:52,177 INFO werkzeug Thread-3 : 127.0.0.1 - - [25/Aug/2025 06:38:52] "OPTIONS /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:38:52,181 ERROR backend Thread-4 : Session update failed: No module named 'models'
+2025-08-25 06:38:52,182 INFO werkzeug Thread-4 : 127.0.0.1 - - [25/Aug/2025 06:38:52] "[35m[1mPOST /api/update_session HTTP/1.1[0m" 500 -
+2025-08-25 06:39:38,256 INFO werkzeug Thread-5 : 127.0.0.1 - - [25/Aug/2025 06:39:38] "OPTIONS /api/login HTTP/1.1" 200 -
+2025-08-25 06:39:38,324 INFO werkzeug Thread-6 : 127.0.0.1 - - [25/Aug/2025 06:39:38] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-08-25 06:39:40,593 INFO werkzeug Thread-7 : 127.0.0.1 - - [25/Aug/2025 06:39:40] "OPTIONS /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:39:40,598 ERROR backend Thread-8 : Session update failed: No module named 'models'
+2025-08-25 06:39:40,599 INFO werkzeug Thread-8 : 127.0.0.1 - - [25/Aug/2025 06:39:40] "[35m[1mPOST /api/update_session HTTP/1.1[0m" 500 -
+2025-08-25 06:41:51,747 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5002/ (Press CTRL+C to quit)
+2025-08-25 06:42:12,457 INFO werkzeug Thread-1 : 127.0.0.1 - - [25/Aug/2025 06:42:12] "OPTIONS /api/login HTTP/1.1" 200 -
+2025-08-25 06:42:12,572 INFO werkzeug Thread-2 : 127.0.0.1 - - [25/Aug/2025 06:42:12] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-08-25 06:42:15,842 INFO werkzeug Thread-3 : 127.0.0.1 - - [25/Aug/2025 06:42:15] "OPTIONS /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:42:15,997 INFO backend.services.memory_integration Thread-4 : Conversation stored in local memory with ID: memory_0_1756075335.997487
+2025-08-25 06:42:15,997 INFO backend.models.llm_integration Thread-4 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:42:15,998 INFO backend.models.llm_integration Thread-4 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:42:15,998 INFO backend.models.llm_integration Thread-4 : Payload model: deepseek-chat
+2025-08-25 06:42:16,157 ERROR backend.models.llm_integration Thread-4 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:42:16,158 INFO backend.models.llm_integration Thread-4 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:42:16,158 INFO backend.models.llm_integration Thread-4 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:42:16,158 INFO backend.models.llm_integration Thread-4 : Payload model: deepseek-chat
+2025-08-25 06:42:16,232 ERROR backend.models.llm_integration Thread-4 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:42:18,461 INFO backend.models.rag_system Thread-4 : RAG index built successfully
+2025-08-25 06:42:18,462 INFO backend.services.llm_therapy_service Thread-4 : RAG context retrieved: bbbbb...
+2025-08-25 06:42:18,462 INFO backend.models.llm_integration Thread-4 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:42:18,462 INFO backend.models.llm_integration Thread-4 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:42:18,462 INFO backend.models.llm_integration Thread-4 : Payload model: deepseek-chat
+2025-08-25 06:42:18,537 ERROR backend.models.llm_integration Thread-4 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:42:18,538 INFO backend.models.llm_integration Thread-4 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:42:18,538 INFO backend.models.llm_integration Thread-4 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:42:18,538 INFO backend.models.llm_integration Thread-4 : Payload model: deepseek-chat
+2025-08-25 06:42:18,617 ERROR backend.models.llm_integration Thread-4 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:42:18,617 WARNING backend.services.llm_therapy_service Thread-4 : Failed to generate options with LLM: Expecting value: line 1 column 1 (char 0)
+2025-08-25 06:42:18,618 INFO werkzeug Thread-4 : 127.0.0.1 - - [25/Aug/2025 06:42:18] "POST /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:43:55,789 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5002/ (Press CTRL+C to quit)
+2025-08-25 06:46:30,821 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5002/ (Press CTRL+C to quit)
+2025-08-25 06:47:52,606 INFO numexpr.utils Thread-1 : NumExpr defaulting to 8 threads.
+2025-08-25 06:47:53,427 INFO werkzeug Thread-1 : 127.0.0.1 - - [25/Aug/2025 06:47:53] "[35m[1mPOST /api/login HTTP/1.1[0m" 500 -
+2025-08-25 06:47:53,463 INFO werkzeug Thread-2 : 127.0.0.1 - - [25/Aug/2025 06:47:53] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-08-25 06:50:07,855 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5002/ (Press CTRL+C to quit)
+2025-08-25 06:50:19,508 INFO numexpr.utils Thread-1 : NumExpr defaulting to 8 threads.
+2025-08-25 06:50:20,315 WARNING backend Thread-1 : Decision maker failed: cannot import name 'decision_maker' from 'backend.models.rule_based_model' (/Users/liuyanjun/therapy_agent/backend/models/rule_based_model.py)
+2025-08-25 06:50:20,321 INFO werkzeug Thread-1 : 127.0.0.1 - - [25/Aug/2025 06:50:20] "POST /api/login HTTP/1.1" 200 -
+2025-08-25 06:50:20,335 INFO backend.services.memory_integration Thread-2 : Conversation stored in local memory with ID: memory_0_1756075820.335537
+2025-08-25 06:50:20,335 INFO backend.models.llm_integration Thread-2 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:50:20,335 INFO backend.models.llm_integration Thread-2 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:50:20,335 INFO backend.models.llm_integration Thread-2 : Payload model: deepseek-chat
+2025-08-25 06:50:20,473 ERROR backend.models.llm_integration Thread-2 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:50:20,474 INFO backend.models.llm_integration Thread-2 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:50:20,474 INFO backend.models.llm_integration Thread-2 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:50:20,474 INFO backend.models.llm_integration Thread-2 : Payload model: deepseek-chat
+2025-08-25 06:50:20,552 ERROR backend.models.llm_integration Thread-2 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:50:22,025 INFO backend.models.rag_system Thread-2 : RAG index built successfully
+2025-08-25 06:50:22,025 INFO backend.services.llm_therapy_service Thread-2 : RAG context retrieved: Hello...
+2025-08-25 06:50:22,025 INFO backend.models.llm_integration Thread-2 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:50:22,025 INFO backend.models.llm_integration Thread-2 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:50:22,025 INFO backend.models.llm_integration Thread-2 : Payload model: deepseek-chat
+2025-08-25 06:50:22,108 ERROR backend.models.llm_integration Thread-2 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:50:22,108 INFO backend.models.llm_integration Thread-2 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:50:22,108 INFO backend.models.llm_integration Thread-2 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:50:22,108 INFO backend.models.llm_integration Thread-2 : Payload model: deepseek-chat
+2025-08-25 06:50:22,183 ERROR backend.models.llm_integration Thread-2 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:50:22,184 WARNING backend.services.llm_therapy_service Thread-2 : Failed to generate options with LLM: Expecting value: line 1 column 1 (char 0)
+2025-08-25 06:50:22,189 INFO werkzeug Thread-2 : 127.0.0.1 - - [25/Aug/2025 06:50:22] "POST /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:50:22,223 INFO werkzeug Thread-3 : 127.0.0.1 - - [25/Aug/2025 06:50:22] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-08-25 06:51:19,430 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5002/ (Press CTRL+C to quit)
+2025-08-25 06:51:31,449 INFO numexpr.utils Thread-1 : NumExpr defaulting to 8 threads.
+2025-08-25 06:51:32,182 WARNING backend Thread-1 : Decision maker failed: cannot import name 'decision_maker' from 'backend.models.rule_based_model' (/Users/liuyanjun/therapy_agent/backend/models/rule_based_model.py)
+2025-08-25 06:51:32,187 INFO werkzeug Thread-1 : 127.0.0.1 - - [25/Aug/2025 06:51:32] "POST /api/login HTTP/1.1" 200 -
+2025-08-25 06:51:32,197 INFO backend.services.memory_integration Thread-2 : Conversation stored in local memory with ID: memory_0_1756075892.197362
+2025-08-25 06:51:33,701 INFO backend.models.rag_system Thread-2 : RAG index built successfully
+2025-08-25 06:51:33,701 INFO backend.services.llm_therapy_service Thread-2 : RAG context retrieved: Hello...
+2025-08-25 06:51:33,701 WARNING backend.services.llm_therapy_service Thread-2 : Failed to generate options with LLM: Expecting value: line 1 column 1 (char 0)
+2025-08-25 06:51:33,704 INFO werkzeug Thread-2 : 127.0.0.1 - - [25/Aug/2025 06:51:33] "POST /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:51:33,737 INFO werkzeug Thread-3 : 127.0.0.1 - - [25/Aug/2025 06:51:33] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-08-25 06:52:21,182 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5002/ (Press CTRL+C to quit)
+2025-08-25 06:52:57,790 INFO werkzeug Thread-1 : 127.0.0.1 - - [25/Aug/2025 06:52:57] "OPTIONS /api/login HTTP/1.1" 200 -
+2025-08-25 06:52:57,894 INFO werkzeug Thread-2 : 127.0.0.1 - - [25/Aug/2025 06:52:57] "[31m[1mPOST /api/login HTTP/1.1[0m" 401 -
+2025-08-25 06:53:01,330 INFO werkzeug Thread-3 : 127.0.0.1 - - [25/Aug/2025 06:53:01] "OPTIONS /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:53:01,472 INFO backend.services.memory_integration Thread-4 : Conversation stored in local memory with ID: memory_0_1756075981.472077
+2025-08-25 06:53:01,472 INFO backend.models.llm_integration Thread-4 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:01,473 INFO backend.models.llm_integration Thread-4 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:01,473 INFO backend.models.llm_integration Thread-4 : Payload model: deepseek-chat
+2025-08-25 06:53:01,618 ERROR backend.models.llm_integration Thread-4 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:01,619 INFO backend.models.llm_integration Thread-4 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:01,619 INFO backend.models.llm_integration Thread-4 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:01,619 INFO backend.models.llm_integration Thread-4 : Payload model: deepseek-chat
+2025-08-25 06:53:01,694 ERROR backend.models.llm_integration Thread-4 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:03,615 INFO backend.services.memory_integration Thread-5 : Conversation stored in local memory with ID: memory_1_1756075983.615674
+2025-08-25 06:53:03,616 INFO backend.models.llm_integration Thread-5 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:03,616 INFO backend.models.llm_integration Thread-5 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:03,616 INFO backend.models.llm_integration Thread-5 : Payload model: deepseek-chat
+2025-08-25 06:53:03,812 ERROR backend.models.llm_integration Thread-5 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:03,814 INFO backend.models.llm_integration Thread-5 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:03,814 INFO backend.models.llm_integration Thread-5 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:03,814 INFO backend.models.llm_integration Thread-5 : Payload model: deepseek-chat
+2025-08-25 06:53:03,923 ERROR backend.models.llm_integration Thread-5 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:04,105 INFO backend.models.rag_system Thread-4 : RAG index built successfully
+2025-08-25 06:53:04,105 INFO backend.services.llm_therapy_service Thread-5 : RAG context retrieved: ffffff...
+2025-08-25 06:53:04,106 INFO backend.services.llm_therapy_service Thread-4 : RAG context retrieved: hhhh...
+2025-08-25 06:53:04,106 INFO backend.models.llm_integration Thread-5 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:04,106 INFO backend.models.llm_integration Thread-4 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:04,106 INFO backend.models.llm_integration Thread-5 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:04,106 INFO backend.models.llm_integration Thread-4 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:04,106 INFO backend.models.llm_integration Thread-5 : Payload model: deepseek-chat
+2025-08-25 06:53:04,106 INFO backend.models.llm_integration Thread-4 : Payload model: deepseek-chat
+2025-08-25 06:53:04,181 ERROR backend.models.llm_integration Thread-4 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:04,181 INFO backend.models.llm_integration Thread-4 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:04,181 INFO backend.models.llm_integration Thread-4 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:04,181 INFO backend.models.llm_integration Thread-4 : Payload model: deepseek-chat
+2025-08-25 06:53:04,187 ERROR backend.models.llm_integration Thread-5 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:04,187 INFO backend.models.llm_integration Thread-5 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:04,187 INFO backend.models.llm_integration Thread-5 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:04,187 INFO backend.models.llm_integration Thread-5 : Payload model: deepseek-chat
+2025-08-25 06:53:04,255 ERROR backend.models.llm_integration Thread-4 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:04,256 WARNING backend.services.llm_therapy_service Thread-4 : Failed to generate options with LLM: Expecting value: line 1 column 1 (char 0)
+2025-08-25 06:53:04,256 INFO werkzeug Thread-4 : 127.0.0.1 - - [25/Aug/2025 06:53:04] "POST /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:53:04,261 ERROR backend.models.llm_integration Thread-5 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:04,262 WARNING backend.services.llm_therapy_service Thread-5 : Failed to generate options with LLM: Expecting value: line 1 column 1 (char 0)
+2025-08-25 06:53:04,262 INFO werkzeug Thread-5 : 127.0.0.1 - - [25/Aug/2025 06:53:04] "POST /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:53:13,720 INFO werkzeug Thread-6 : 127.0.0.1 - - [25/Aug/2025 06:53:13] "OPTIONS /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:53:13,725 INFO backend.services.memory_integration Thread-7 : Conversation stored in local memory with ID: memory_2_1756075993.725834
+2025-08-25 06:53:13,726 INFO backend.models.llm_integration Thread-7 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:13,726 INFO backend.models.llm_integration Thread-7 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:13,726 INFO backend.models.llm_integration Thread-7 : Payload model: deepseek-chat
+2025-08-25 06:53:13,818 ERROR backend.models.llm_integration Thread-7 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:13,818 INFO backend.models.llm_integration Thread-7 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:13,818 INFO backend.models.llm_integration Thread-7 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:13,818 INFO backend.models.llm_integration Thread-7 : Payload model: deepseek-chat
+2025-08-25 06:53:13,892 ERROR backend.models.llm_integration Thread-7 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:13,893 INFO backend.services.llm_therapy_service Thread-7 : RAG context retrieved: 寻求指导...
+2025-08-25 06:53:13,893 INFO backend.models.llm_integration Thread-7 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:13,893 INFO backend.models.llm_integration Thread-7 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:13,893 INFO backend.models.llm_integration Thread-7 : Payload model: deepseek-chat
+2025-08-25 06:53:13,981 ERROR backend.models.llm_integration Thread-7 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:13,982 INFO backend.models.llm_integration Thread-7 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:13,982 INFO backend.models.llm_integration Thread-7 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:13,982 INFO backend.models.llm_integration Thread-7 : Payload model: deepseek-chat
+2025-08-25 06:53:14,118 ERROR backend.models.llm_integration Thread-7 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:14,118 WARNING backend.services.llm_therapy_service Thread-7 : Failed to generate options with LLM: Expecting value: line 1 column 1 (char 0)
+2025-08-25 06:53:14,119 INFO werkzeug Thread-7 : 127.0.0.1 - - [25/Aug/2025 06:53:14] "POST /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:53:17,253 INFO backend.services.memory_integration Thread-8 : Conversation stored in local memory with ID: memory_3_1756075997.253445
+2025-08-25 06:53:17,253 INFO backend.models.llm_integration Thread-8 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:17,253 INFO backend.models.llm_integration Thread-8 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:17,253 INFO backend.models.llm_integration Thread-8 : Payload model: deepseek-chat
+2025-08-25 06:53:17,332 ERROR backend.models.llm_integration Thread-8 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:17,332 INFO backend.models.llm_integration Thread-8 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:17,332 INFO backend.models.llm_integration Thread-8 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:17,332 INFO backend.models.llm_integration Thread-8 : Payload model: deepseek-chat
+2025-08-25 06:53:17,422 ERROR backend.models.llm_integration Thread-8 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:17,422 INFO backend.services.llm_therapy_service Thread-8 : RAG context retrieved: 换个话题...
+2025-08-25 06:53:17,422 INFO backend.models.llm_integration Thread-8 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:17,422 INFO backend.models.llm_integration Thread-8 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:17,422 INFO backend.models.llm_integration Thread-8 : Payload model: deepseek-chat
+2025-08-25 06:53:17,503 ERROR backend.models.llm_integration Thread-8 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:17,504 INFO backend.models.llm_integration Thread-8 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:17,504 INFO backend.models.llm_integration Thread-8 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:17,504 INFO backend.models.llm_integration Thread-8 : Payload model: deepseek-chat
+2025-08-25 06:53:17,585 ERROR backend.models.llm_integration Thread-8 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:17,585 WARNING backend.services.llm_therapy_service Thread-8 : Failed to generate options with LLM: Expecting value: line 1 column 1 (char 0)
+2025-08-25 06:53:17,586 INFO werkzeug Thread-8 : 127.0.0.1 - - [25/Aug/2025 06:53:17] "POST /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:53:20,254 INFO werkzeug Thread-9 : 127.0.0.1 - - [25/Aug/2025 06:53:20] "OPTIONS /api/update_session HTTP/1.1" 200 -
+2025-08-25 06:53:20,260 INFO backend.services.memory_integration Thread-10 : Conversation stored in local memory with ID: memory_4_1756076000.259967
+2025-08-25 06:53:20,260 INFO backend.models.llm_integration Thread-10 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:20,260 INFO backend.models.llm_integration Thread-10 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:20,260 INFO backend.models.llm_integration Thread-10 : Payload model: deepseek-chat
+2025-08-25 06:53:20,343 ERROR backend.models.llm_integration Thread-10 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:20,344 INFO backend.models.llm_integration Thread-10 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:20,344 INFO backend.models.llm_integration Thread-10 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:20,344 INFO backend.models.llm_integration Thread-10 : Payload model: deepseek-chat
+2025-08-25 06:53:20,416 ERROR backend.models.llm_integration Thread-10 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:20,416 INFO backend.services.llm_therapy_service Thread-10 : RAG context retrieved: 继续对话...
+2025-08-25 06:53:20,416 INFO backend.models.llm_integration Thread-10 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:20,416 INFO backend.models.llm_integration Thread-10 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:20,416 INFO backend.models.llm_integration Thread-10 : Payload model: deepseek-chat
+2025-08-25 06:53:20,497 ERROR backend.models.llm_integration Thread-10 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:20,498 INFO backend.models.llm_integration Thread-10 : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 06:53:20,498 INFO backend.models.llm_integration Thread-10 : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 06:53:20,499 INFO backend.models.llm_integration Thread-10 : Payload model: deepseek-chat
+2025-08-25 06:53:20,646 ERROR backend.models.llm_integration Thread-10 : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 06:53:20,646 WARNING backend.services.llm_therapy_service Thread-10 : Failed to generate options with LLM: Expecting value: line 1 column 1 (char 0)
+2025-08-25 06:53:20,647 INFO werkzeug Thread-10 : 127.0.0.1 - - [25/Aug/2025 06:53:20] "POST /api/update_session HTTP/1.1" 200 -
+2025-08-25 07:03:25,491 INFO backend.models.llm_integration MainThread : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 07:03:25,492 INFO backend.models.llm_integration MainThread : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 07:03:25,492 INFO backend.models.llm_integration MainThread : Payload model: deepseek-chat
+2025-08-25 07:03:25,638 ERROR backend.models.llm_integration MainThread : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 07:03:25,638 WARNING backend.models.llm_integration MainThread : Authentication failed, using fallback mode
+2025-08-25 07:03:25,639 INFO backend.models.llm_integration MainThread : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 07:03:25,639 INFO backend.models.llm_integration MainThread : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 07:03:25,639 INFO backend.models.llm_integration MainThread : Payload model: deepseek-chat
+2025-08-25 07:03:25,717 ERROR backend.models.llm_integration MainThread : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 07:03:25,718 WARNING backend.models.llm_integration MainThread : Authentication failed, using fallback mode
+2025-08-25 07:05:44,709 INFO numexpr.utils MainThread : NumExpr defaulting to 8 threads.
+2025-08-25 07:06:05,312 INFO backend.models.llm_integration MainThread : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 07:06:05,313 INFO backend.models.llm_integration MainThread : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 07:06:05,313 INFO backend.models.llm_integration MainThread : Payload model: deepseek-chat
+2025-08-25 07:06:05,402 ERROR backend.models.llm_integration MainThread : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 07:06:05,402 WARNING backend.models.llm_integration MainThread : Authentication failed, using fallback mode
+2025-08-25 07:06:05,403 INFO backend.models.llm_integration MainThread : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 07:06:05,403 INFO backend.models.llm_integration MainThread : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 07:06:05,403 INFO backend.models.llm_integration MainThread : Payload model: deepseek-chat
+2025-08-25 07:06:05,500 ERROR backend.models.llm_integration MainThread : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 07:06:05,500 WARNING backend.models.llm_integration MainThread : Authentication failed, using fallback mode
+2025-08-25 07:06:05,500 INFO backend.models.llm_integration MainThread : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 07:06:05,500 INFO backend.models.llm_integration MainThread : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 07:06:05,500 INFO backend.models.llm_integration MainThread : Payload model: deepseek-chat
+2025-08-25 07:06:05,570 ERROR backend.models.llm_integration MainThread : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 07:06:05,570 WARNING backend.models.llm_integration MainThread : Authentication failed, using fallback mode
+2025-08-25 07:06:08,020 INFO backend.models.rag_system MainThread : RAG index built successfully
+2025-08-25 07:06:08,020 INFO backend.services.llm_therapy_service MainThread : RAG context retrieved: I am feeling anxious about my work...
+2025-08-25 07:06:08,021 INFO backend.models.llm_integration MainThread : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 07:06:08,021 INFO backend.models.llm_integration MainThread : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 07:06:08,021 INFO backend.models.llm_integration MainThread : Payload model: deepseek-chat
+2025-08-25 07:06:08,104 ERROR backend.models.llm_integration MainThread : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 07:06:08,104 WARNING backend.models.llm_integration MainThread : Authentication failed, using fallback mode
+2025-08-25 07:06:08,105 INFO backend.models.llm_integration MainThread : API Call: https://api.deepseek.com/v1/chat/completions
+2025-08-25 07:06:08,105 INFO backend.models.llm_integration MainThread : Headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer [REDACTED]'}
+2025-08-25 07:06:08,105 INFO backend.models.llm_integration MainThread : Payload model: deepseek-chat
+2025-08-25 07:06:08,188 ERROR backend.models.llm_integration MainThread : API call failed: 401 - {"error":{"message":"Authentication Fails, Your api key: ****0pEA is invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}
+2025-08-25 07:06:08,188 WARNING backend.models.llm_integration MainThread : Authentication failed, using fallback mode
+2025-08-25 07:06:08,188 WARNING backend.services.llm_therapy_service MainThread : Failed to generate options with LLM: Expecting value: line 1 column 1 (char 0)
+2025-08-25 07:07:00,974 INFO werkzeug MainThread :  * Running on http://127.0.0.1:5002/ (Press CTRL+C to quit)
+2025-08-25 07:09:08,860 ERROR backend Thread-1 : Exception on /api/login [POST]
+Traceback (most recent call last):
+  File "/Users/liuyanjun/opt/anaconda3/lib/python3.9/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/liuyanjun/opt/anaconda3/lib/python3.9/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/liuyanjun/opt

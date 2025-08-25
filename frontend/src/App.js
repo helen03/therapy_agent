@@ -1,23 +1,125 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Chatbot } from "react-chatbot-kit";
+import { createChatBotMessage } from "react-chatbot-kit";
 import "./App.css";
 import MessageParser from "./MessageParser";
 import ActionProvider from "./ActionProvider";
 import config from "./config";
+import Login from "./Login";
 
 const App = () => {
   const [showTools, setShowTools] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
+  const [chatConfig, setChatConfig] = useState(config);
+
+  const handleLogin = (userData) => {
+    setUserInfo(userData);
+    setIsLoggedIn(true);
+    
+    // Create initial messages using the backend response
+    const initialMessages = [
+      createChatBotMessage(`Hi ${userData.username}, welcome to today's therapy session!`, {
+        withAvatar: true,
+        delay: 0,
+      }),
+    ];
+    
+    // Add the model prompt from backend if available
+    if (userData.model_prompt) {
+      initialMessages.push(
+        createChatBotMessage(userData.model_prompt, {
+          withAvatar: true,
+          delay: 1500,
+          widget: userData.choices && userData.choices.length > 0 ? "InitialOptions" : null,
+        })
+      );
+    } else {
+      initialMessages.push(
+        createChatBotMessage("I'm here to help you with your emotional well-being. Let's begin our session.", {
+          withAvatar: true,
+          delay: 1500,
+        })
+      );
+    }
+    
+    // Update config with user info and initial messages
+    const updatedConfig = {
+      ...config,
+      initialMessages: initialMessages,
+      state: {
+        ...config.state,
+        userState: userData.userID,
+        sessionID: userData.sessionID,
+        username: userData.username,
+        // Store the initial choices from backend
+        initialChoices: userData.choices || []
+      }
+    };
+    
+    setChatConfig(updatedConfig);
+  };
+
+  const handleRegister = (userData) => {
+    setUserInfo(userData);
+    setIsLoggedIn(true);
+    
+    // Create welcome messages for new user
+    const welcomeMessages = [
+      createChatBotMessage(`Welcome to MindGuide, ${userData.username}!`, {
+        withAvatar: true,
+        delay: 0,
+      }),
+      createChatBotMessage("I'm glad you're here. Let's start your first therapy session together.", {
+        withAvatar: true,
+        delay: 1500,
+      }),
+    ];
+    
+    // Update config with user info and welcome messages
+    const updatedConfig = {
+      ...config,
+      initialMessages: welcomeMessages,
+      state: {
+        ...config.state,
+        userState: userData.userID,
+        sessionID: userData.sessionID,
+        username: userData.username,
+      }
+    };
+    
+    setChatConfig(updatedConfig);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserInfo(null);
+    setChatConfig(config); // Reset to original config
+  };
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} onRegister={handleRegister} />;
+  }
 
   return (
     <div className="App">
       <div className="app-header">
         <h1>MindGuide Therapy Assistant</h1>
-        <button 
-          className="tools-toggle"
-          onClick={() => setShowTools(!showTools)}
-        >
-          {showTools ? '隐藏工具' : '显示工具'}
-        </button>
+        <div className="header-controls">
+          <span className="user-info">欢迎, {userInfo?.username}</span>
+          <button 
+            className="tools-toggle"
+            onClick={() => setShowTools(!showTools)}
+          >
+            {showTools ? '隐藏工具' : '显示工具'}
+          </button>
+          <button 
+            className="logout-btn"
+            onClick={handleLogout}
+          >
+            退出登录
+          </button>
+        </div>
       </div>
       
       <div className="app-content">
@@ -41,7 +143,7 @@ const App = () => {
         
         <div className={`chat-container ${showTools ? 'with-tools' : ''}`}>
           <Chatbot
-            config={config}
+            config={chatConfig}
             messageParser={MessageParser}
             actionProvider={ActionProvider}
           />

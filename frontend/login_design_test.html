@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindGuide 登录界面设计测试</title>
+    <style>
+        /* 导入我们的登录样式 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        /* 导入我们的CSS变量和样式 */
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --accent-color: #ec4899;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --background-gradient-1: #667eea;
+            --background-gradient-2: #764ba2;
+            --background-gradient-3: #f093fb;
+            --card-background: rgba(255, 255, 255, 0.95);
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-heavy: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .demo-container {
+            background: var(--card-background);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-heavy);
+            width: 100%;
+            max-width: 440px;
+            position: relative;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .brand-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: var(--shadow-medium);
+            animation: pulse 2s ease-in-out infinite;
+            transition: var(--transition);
+        }
+        
+        .brand-logo:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-heavy);
+        }
+        
+        .brand-logo svg {
+            width: 48px;
+            height: 48px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .brand-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .brand-tagline {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        
+        .demo-form {
+            margin-top: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: white;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 2.5rem;
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-group input:focus + .input-icon {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+        
+        .design-info {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 12px;
+            border: 1px solid #bae6fd;
+        }
+        
+        .design-info h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .design-info ul {
+            list-style: none;
+            color: var(--text-secondary);
+        }
+        
+        .design-info li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .design-info li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+        }
+        
+        .color-palette {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .color-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: var(--shadow-light);
+            position: relative;
+        }
+        
+        .color-swatch::after {
+            content: attr(data-color);
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="brand-section">
+            <div class="brand-logo">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="24" cy="24" r="20" fill="url(#brainGradient)"/>
+                    <path d="M24 12C18 12 14 16 14 22C14 26 16 28 18 28C20 28 22 26 22 24C22 22 20 20 18 20" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M24 12C30 12 34 16 34 22C34 26 32 28 30 28C28 28 26 26 26 24C26 22 28 20 30 20" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M20 28C20 30 22 32 24 32C26 32 28 30 28 28" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                    <circle cx="20" cy="22" r="1.5" fill="white"/>
+                    <circle cx="28" cy="22" r="1.5" fill="white"/>
+                    <defs>
+                        <linearGradient id="brainGradient" x1="24" y1="4" x2="24" y2="44" gradientUnits="userSpaceOnUse">
+                            <stop stopColor="#6366f1"/>
+                            <stop offset="1" stopColor="#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <h1 class="brand-title">MindGuide</h1>
+            <p class="brand-tagline">您的心灵健康伙伴</p>
+        </div>
+        
+        <div class="demo-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" placeholder="请输入您的用户名">
+                <div class="input-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 9C11.1046 9 12 8.10457 12 7C12 5.89543 11.1046 5 10 5C8.89543 5 8 5.89543 8 7C8 8.10457 8.89543 9 10 9Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <path d="M10 12C7.79086 12 6 13.7909 6 16H14C14 13.7909 12.2091 12 10 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" placeholder="请输入您的密码">
+                <div class="input-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 9V7C5 4.23858 7.23858 2 10 2C12.7614 2 15 4.23858 15 7V9M10 14C10.5523 14 11 13.5523 11 13C11 12.4477 10.5523 12 10 12C9.44772 12 9 12.4477 9 13C9 13.5523 9.44772 14 10 14Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <rect x="3" y="9" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <button class="submit-btn">开始心灵之旅</button>
+        </div>
+        
+        <div class="design-info">
+            <h3>🎨 设计特色</h3>
+            <ul>
+                <li>现代化卡片式布局，半透明毛玻璃效果</li>
+                <li>心理治疗主题的渐变色彩方案</li>
+                <li>精心设计的SVG图标系统</li>
+                <li>流畅的动画效果和微交互</li>
+                <li>完全响应式设计，支持深色模式</li>
+                <li>专业的无障碍设计支持</li>
+            </ul>
+            
+            <div class="color-palette">
+                <div class="color-swatch" style="background: #6366f1;" data-color="#6366f1"></div>
+                <div class="color-swatch" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
+                <div class="color-swatch" style="background: #ec4899;" data-color="#ec4899"></div>
+                <div class="color-swatch" style="background: #10b981;" data-color="#10b981"></div>
+                <div class="color-swatch" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                <div class="color-swatch" style="background: #ef4444;" data-color="#ef4444"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -115,55 +115,75 @@ def create_app():
     def login():
         """User login with JWT authentication"""
         try:
+            print("===== LOGIN API CALLED =====")
+            print(f"请求数据: {request.data}")
+            
             user_info = json.loads(request.data)["user_info"]
             username = user_info["username"]
             password = user_info["password"]
             
+            print(f"用户名: {username}")
+            print(f"密码长度: {len(password)}")
+            
             # Find user by username
             user = User.query.filter_by(username=username).first()
             
-            if user and user.check_password(password):
-                # Create a new session for the user
-                user_session = UserModelSession(user_id=user.id)
-                db.session.add(user_session)
-                db.session.commit()
+            if user:
+                print(f"找到用户: {user.username} (ID: {user.id})")
+                print(f"数据库中的密码哈希: {user.password_hash}")
+                print(f"密码哈希长度: {len(user.password_hash)}")
                 
-                # Generate JWT token
-                token = user.generate_auth_token()
+                # 直接测试密码验证
+                password_valid = user.check_password(password)
+                print(f"密码验证结果: {password_valid}")
                 
-                try:
-                    # Try to get initial response from decision maker
-                    from backend.models.rule_based_model import decision_maker
-                    initial_output = decision_maker.determine_next_choice(
-                        user.id, "any", None, db.session, user_session, app
-                    )
+                if password_valid:
+                    # Create a new session for the user
+                    user_session = UserModelSession(user_id=user.id)
+                    db.session.add(user_session)
+                    db.session.commit()
                     
-                    return {
-                        "success": True, 
-                        "validID": True,
-                        "userID": user.id,
-                        "sessionID": user_session.id,
-                        "token": token,
-                        "model_prompt": initial_output["model_prompt"],
-                        "choices": initial_output["choices"]
-                    }
-                except Exception as e:
-                    # Fallback if decision maker fails (e.g., LLM API issues)
-                    logger.warning(f"Decision maker failed: {e}")
+                    # Generate JWT token
+                    token = user.generate_auth_token()
                     
-                    # Provide a basic response that doesn't rely on LLM
-                    return {
-                        "success": True, 
-                        "validID": True,
-                        "userID": user.id,
-                        "sessionID": user_session.id,
-                        "token": token,
-                        "model_prompt": "Hi, I'm MindGuide, welcome to today's session. How are you feeling today?",
-                        "choices": ["我很好，谢谢", "我有点难过", "我感到焦虑", "我想聊聊心事"]
-                    }
+                    try:
+                        # Try to get initial response from decision maker
+                        from backend.models.rule_based_model import decision_maker
+                        initial_output = decision_maker.determine_next_choice(
+                            user.id, "any", None, db.session, user_session, app
+                        )
+                        
+                        return {
+                            "success": True, 
+                            "validID": True,
+                            "userID": user.id,
+                            "sessionID": user_session.id,
+                            "token": token,
+                            "model_prompt": initial_output["model_prompt"],
+                            "choices": initial_output["choices"]
+                        }
+                    except Exception as e:
+                        # Fallback if decision maker fails (e.g., LLM API issues)
+                        logger.warning(f"Decision maker failed: {e}")
+                        
+                        # Provide a basic response that doesn't rely on LLM
+                        return {
+                            "success": True, 
+                            "validID": True,
+                            "userID": user.id,
+                            "sessionID": user_session.id,
+                            "token": token,
+                            "model_prompt": "Hi, I'm MindGuide, welcome to today's session. How are you feeling today?",
+                            "choices": ["我很好，谢谢", "我有点难过", "我感到焦虑", "我想聊聊心事"]
+                        }
+                else:
+                    print(f"密码验证失败: 用户名 '{username}' 的密码不正确")
+                    return {"success": False, "validID": False, "error": "Invalid username or password"}, 401
             else:
+                print(f"用户不存在: 未找到用户名 '{username}'")
                 return {"success": False, "validID": False, "error": "Invalid username or password"}, 401
         except Exception as e:
+            print(f"登录请求异常: {e}")
             return {"success": False, "validID": False, "error": str(e)}, 500
 
     # Add new API endpoints for enhanced features
