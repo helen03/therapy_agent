@@ -17,13 +17,13 @@ export const getEnvironment = () => {
   if (process.env.REACT_APP_API_BASE_URL) {
     apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
   } else if (isLocalhost) {
-    apiBaseUrl = 'http://localhost:5001';
+    apiBaseUrl = 'http://localhost:5002';
   } else {
     // 生产环境使用相对路径或根据域名推断
     apiBaseUrl = port ? `${protocol}//${hostname}:${port}` : `${protocol}//${hostname}`;
     // 如果API端口与前端不同，需要指定端口
-    if (!port || port !== '5001') {
-      apiBaseUrl = `${protocol}//${hostname}:5001`;
+    if (!port || port !== '5002') {
+      apiBaseUrl = `${protocol}//${hostname}:5002`;
     }
   }
 
